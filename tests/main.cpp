@@ -74,14 +74,18 @@ private:
     Loop _loop;
 };
 
-/*
 class Channel {
 
+public:
     void render(float* outputBuffer, unsigned long framesPerBuffer) {
+        if (_sample == nullptr) {
+            memset(outputBuffer, 0, framesPerBuffer * sizeof outputBuffer[0]);
+            return;
+        }
     }
 
-    private:
-        Sample* _sample;
+private:
+    Sample* _sample = nullptr;
 };
 
 TEST(Channel, NullSampleResultsInSilence) {
@@ -89,11 +93,10 @@ TEST(Channel, NullSampleResultsInSilence) {
     std::vector<float> expected(buffer.size(), 0);
 
     Channel c;
-    c.render(buffer, buffer.size());
+    c.render(&buffer[0], buffer.size());
 
     ASSERT_EQ(buffer, expected);
 }
-*/
 
 TEST(Sample, CanAcceptInitializerList) {
     Sample sample{0, 1.0f, 0, 1.0f};

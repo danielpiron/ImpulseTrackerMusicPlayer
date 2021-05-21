@@ -24,31 +24,82 @@ public:
 
 struct Channel {
 
+    struct Note {
+        float frequency;
+        float volume;
+    };
+    
     Channel(const Sample* sample_ = nullptr) : sample(sample_)
-                                             , index(0)
-                                             , rate(1.0f) {}
+                                             , sampleIndex(0)
+                                             , note({523.0f, 1.0}) {}
 
-    void render(float* outputBuffer, unsigned long framesPerBuffer) {
+    void render(float* outputBuffer, unsigned long framesPerBuffer, unsigned int sampleRate=44100) {
         if (sample == nullptr) return;
+
+        float rate = sampleRate / note.frequency;
         while (framesPerBuffer) {
-            size_t samplesUntilLoop = sample->length() - static_cast<size_t>(index);
+            std::cout << "framesPerBuffer: " << framesPerBuffer << "\n";
+            std::cout << "Sample length: " << sample->length() << "\n";
+            std::cout << "Sample index: " << sampleIndex << "\n";
+            std::cout << "Rate: " << rate << std::endl;
+            size_t samplesUntilLoop = static_cast<size_t>((sample->length() - static_cast<size_t>(sampleIndex)) / rate);
+            std::cout << "SamplesUntilLoop: " << samplesUntilLoop << std::endl;
             bool loopOccurs = samplesUntilLoop < framesPerBuffer;
             size_t renderPassLength = loopOccurs ? samplesUntilLoop : framesPerBuffer;
 
             framesPerBuffer -= renderPassLength;
             while (renderPassLength--) {
-                *outputBuffer++ = (*sample)[index];
-                index += rate;
+                auto value = (*sample)[sampleIndex];
+                std::cout << value << "\n";
+                *outputBuffer++ =  value;
+                sampleIndex += rate;
             }
 
+            std::cout << "samplesIndex after: " << sampleIndex << std::endl;
             if (loopOccurs) {
-                index -= sample->length();
+                sampleIndex -= sample->length();
             }
         }
     }
+
     const Sample* sample;
-    float index;
-    float rate;
+    float sampleIndex;
+    Note note;
+};
+
+struct AudioGenerator {
+    AudioGenerator(size_t channelCount_, unsigned int sampleRate_)
+    : channels(channelCount_)
+    , sampleRate(sampleRate_)
+    , samplesPerFrame(22050)
+    , samplesUntilNextFrame(0)
+    , row(0)
+    {}
+
+    void render(float* outputBuffer, unsigned long framesPerBuffer) {
+
+        while (framesPerBuffer) {
+            if (samplesUntilNextFrame == 0) {
+                channels[0].note = notes[row++ % notes.size()];
+                samplesUntilNextFrame = samplesPerFrame;
+            }
+
+            auto samplesToRender = framesPerBuffer < samplesUntilNextFrame
+                                   ? framesPerBuffer
+                                   : samplesUntilNextFrame;
+
+            framesPerBuffer -= samplesToRender;
+            samplesUntilNextFrame -= samplesToRender;
+            channels[0].render(outputBuffer, samplesToRender, sampleRate);
+        }
+    }
+
+    std::vector<Channel> channels;
+    std::vector<Channel::Note> notes;
+    unsigned int sampleRate;
+    size_t samplesPerFrame;
+    size_t samplesUntilNextFrame;
+    size_t row;
 };
 
 static int patestCallback(const void *inputBuffer, void *outputBuffer,
@@ -61,9 +112,9 @@ static int patestCallback(const void *inputBuffer, void *outputBuffer,
     (void)timeInfo;
     (void)statusFlags;
 
-    auto channel = reinterpret_cast<Channel*>(userData);
+    auto audio = reinterpret_cast<AudioGenerator*>(userData);
     float* pOut = reinterpret_cast<float*>(outputBuffer);
-    channel->render(pOut, framesPerBuffer);
+    audio->render(pOut, framesPerBuffer);
 
     return paContinue;
 }
@@ -95,11 +146,28 @@ int main() {
 
 
     Sample sample;
-    size_t sampleCount = 44100 / 440;
+    unsigned int sampleCount = 44100;
     for (size_t i = 0; i < sampleCount; ++i) {
         sample._samples.push_back(static_cast<float>(sin(M_PI * 2 * i / sampleCount)));
     }
-    Channel channel(&sample);
+
+    AudioGenerator audio(1, sampleCount);
+    audio.channels[0].sample = &sample;
+    audio.notes = {
+           {523.25f, 1.0},  // C5
+//         {554.37f, 1.0},  // C#5
+           {587.33f, 1.0},  // D5
+//         {622.25f, 1.0},  // D#5
+           {659.25f, 1.0},  // E5
+           {698.46f, 1.0},  // F5
+//         {739.99f, 1.0},  // F#5
+           {783.99f, 1.0},  // G5
+//         {830.61f, 1.0},  // G#5
+           {880.00f, 1.0},  // A5
+//         {932.33f, 1.0},  // A#5
+           {987.77f, 1.0},  // B5
+           {1046.50f, 1.0}, // C6
+    };
 
     PaStream* stream = nullptr;
     err = Pa_OpenStream(
@@ -110,7 +178,7 @@ int main() {
         paFramesPerBufferUnspecified,
         paClipOff,
         patestCallback,
-        reinterpret_cast<void*>(&channel));
+        reinterpret_cast<void*>(&audio));
     if (err != paNoError) {
         std::cerr << "Error opening stream" << std::endl;
         return 1;
