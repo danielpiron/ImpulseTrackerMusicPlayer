@@ -77,15 +77,26 @@ private:
 class Channel {
 
 public:
+    void set_sample(const Sample* sample_) {
+        _sample = sample_;
+        _sampleIndex = 0;
+    }
+
     void render(float* outputBuffer, unsigned long framesPerBuffer) {
         if (_sample == nullptr) {
             memset(outputBuffer, 0, framesPerBuffer * sizeof outputBuffer[0]);
             return;
         }
+
+        while (framesPerBuffer--) {
+            *outputBuffer++ = (*_sample)[_sampleIndex];
+            _sampleIndex += 1.0f;
+        }
     }
 
 private:
-    Sample* _sample = nullptr;
+    const Sample* _sample = nullptr;
+    float _sampleIndex = 0;
 };
 
 TEST(Channel, NullSampleResultsInSilence) {
@@ -96,6 +107,18 @@ TEST(Channel, NullSampleResultsInSilence) {
     c.render(&buffer[0], buffer.size());
 
     ASSERT_EQ(buffer, expected);
+}
+
+TEST(Channel, CanRenderSampleAcrossBuffer) {
+    std::vector<float> expected{1.0f, 2.0f, 3.0f, 4.0f};
+    std::vector<float> buffer(expected.size(), 0);
+    Sample sample(expected.begin(), expected.end());
+
+    Channel c;
+    c.set_sample(&sample);
+    c.render(&buffer[0], buffer.size());
+
+    EXPECT_EQ(buffer, expected);
 }
 
 TEST(Sample, CanAcceptInitializerList) {
