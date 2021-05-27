@@ -15,6 +15,10 @@ public:
         _frequency = freq;
     }
 
+    void set_volume(const float vol) {
+        _volume = vol;
+    }
+
     void render(float* outputBuffer, unsigned long framesPerBuffer, const unsigned int targetSampleRate) {
 
         float rate = _frequency / targetSampleRate;
@@ -26,7 +30,7 @@ public:
             if (_sampleIndex >= _sample->loopEnd()) {
                 _sampleIndex -= _sample->loopLength();
             }
-            *outputBuffer++ = (*_sample)[_sampleIndex];
+            *outputBuffer++ = (*_sample)[_sampleIndex] * _volume;
             _sampleIndex += rate;
         }
     }
@@ -35,6 +39,7 @@ private:
     const Sample* _sample = nullptr;
     float _sampleIndex = 0;
     float _frequency = 44100;
+    float _volume = 1.0f;
 };
 
 #endif

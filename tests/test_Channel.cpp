@@ -55,3 +55,25 @@ TEST(Channel, CanSpecifySampleRateOnRender) {
 
     EXPECT_EQ(buffer, expected);
 }
+
+TEST(Channel, CanSetVolume) {
+    std::vector<float> expected {
+        0, 0.5f, 1.0f, 0, 0.25f, 0.5f, 0, .125, .25f
+    };
+    std::vector<float> buffer(expected.size(), 0);
+
+    Sample sample{0, 0.5f, 1.0f, 0, 0.5f, 1.0f, 0, 0.5f, 1.0f};
+
+    Channel c;
+    c.set_sample(&sample);
+    c.set_frequency(1.0);
+
+    c.set_volume(1.0);
+    c.render(&buffer[0], 3, 1); 
+    c.set_volume(0.5);
+    c.render(&buffer[3], 3, 1); 
+    c.set_volume(0.25);
+    c.render(&buffer[6], 3, 1); 
+
+    EXPECT_EQ(buffer, expected);
+}
