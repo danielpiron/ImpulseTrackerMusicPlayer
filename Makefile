@@ -5,5 +5,5 @@ a.out: src/paex_sine_c++.cpp vendors/portaudio/include/portaudio.h
 	c++ $(CFLAGS) -Ivendors/portaudio/include/ -Lvendors/portaudio/lib/.libs -lportaudio src/paex_sine_c++.cpp
 
 
-run_tests: tests/main.cpp
-	c++ $(CFLAGS) -Ivendors/googletest/googletest/include -Lvendors/googletest/lib -lgtest tests/main.cpp -o run_tests
+run_tests: tests/main.cpp tests/test_Sample.cpp tests/test_Channel.cpp
+	c++ $(CFLAGS) -Ivendors/googletest/googletest/include -Isrc -Lvendors/googletest/lib -lgtest tests/main.cpp tests/test_Sample.cpp tests/test_Channel.cpp -o run_tests
