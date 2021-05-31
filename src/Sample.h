@@ -19,7 +19,7 @@ public:
         auto wholeI = static_cast<size_t>(i);
         float t = i - wholeI;
         size_t nextIndex = wholeI + 1;
-        if (nextIndex == loopEnd()) {
+        if (nextIndex >= loopEnd()) {
             nextIndex -= loopLength();
         }
         float v0 = _data[wholeI];

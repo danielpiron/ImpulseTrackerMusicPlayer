@@ -14,6 +14,19 @@ TEST(Channel, NullSampleResultsInSilence) {
     ASSERT_EQ(buffer, expected);
 }
 
+TEST(Channel, CanHandleSingleSampleSample) {
+    std::vector<float> expected{1.0f, 1.0f, 1.0f, 1.0f};
+    std::vector<float> buffer(expected.size());
+
+    Sample sample{1.0f};
+    Channel c;
+    c.set_sample(&sample);
+    c.set_frequency(1.0);
+    c.render(&buffer[0], 4, 1);
+
+    EXPECT_EQ(buffer, expected);
+}
+
 TEST(Channel, CanSpecifyFrequency) {
     std::vector<float> expected{
         0.0f, 0.25f, 0.5f, 0.75f, 1.0f, // Render 1 - Frequency x1
