@@ -6,15 +6,15 @@
 
 #include <Channel.h>
 
-struct AudioGen {
+struct Mixer {
 
     struct TickHandler {
-        virtual void onAttachment(AudioGen& audio) = 0;
-        virtual void onTick(AudioGen& audio) = 0;
+        virtual void onAttachment(Mixer& audio) = 0;
+        virtual void onTick(Mixer& audio) = 0;
         virtual ~TickHandler() = default;
     };
 
-    AudioGen(const unsigned int sample_rate_ = 1, const size_t channel_count = 1)
+    Mixer(const unsigned int sample_rate_ = 1, const size_t channel_count = 1)
     : sample_rate(sample_rate_)
     , auxilliary_buffer(1024) 
     , channels(channel_count) {}
@@ -63,13 +63,13 @@ struct AudioGen {
     std::vector<Channel> channels;
 };
 
-TEST(AudioGen, CanAcceptOnTickHandler) {
+TEST(Mixer, CanAcceptOnTickHandler) {
 
-    struct TestHandler : public AudioGen::TickHandler {
-        void onAttachment(AudioGen& audio) override {
+    struct TestHandler : public Mixer::TickHandler {
+        void onAttachment(Mixer& audio) override {
             audio.set_samples_per_tick(3);
         }
-        void onTick(AudioGen& audio) override {
+        void onTick(Mixer& audio) override {
             (void)audio;
             ticks_processed++;
         }
@@ -79,7 +79,7 @@ TEST(AudioGen, CanAcceptOnTickHandler) {
     std::vector<float> buffer(8);
 
     TestHandler t;
-    AudioGen ag;
+    Mixer ag;
 
     ag.attach_handler(&t);
     ag.render(&buffer[0], 8);
@@ -87,15 +87,15 @@ TEST(AudioGen, CanAcceptOnTickHandler) {
     EXPECT_EQ(t.ticks_processed, 3UL);
 }
 
-TEST(AudioGen, CanRenderSingleChannel) {
+TEST(Mixer, CanRenderSingleChannel) {
     // Demonstrate channel rendering with tick handler
-    struct VolumeTweaker : public AudioGen::TickHandler {
-        void onAttachment(AudioGen& audio) override {
+    struct VolumeTweaker : public Mixer::TickHandler {
+        void onAttachment(Mixer& audio) override {
             audio.channels[0].set_frequency(1.0f);
             audio.channels[0].set_sample(&one);
             audio.set_samples_per_tick(2);
         }
-        void onTick(AudioGen& audio) override {
+        void onTick(Mixer& audio) override {
             audio.channels[0].set_volume(volume);
             volume /= 2;
         }
@@ -108,7 +108,7 @@ TEST(AudioGen, CanRenderSingleChannel) {
     std::vector<float> buffer(expected.size());
 
     VolumeTweaker t;
-    AudioGen ag;
+    Mixer ag;
 
     ag.attach_handler(&t);
     ag.render(&buffer[0], 8);
@@ -116,12 +116,12 @@ TEST(AudioGen, CanRenderSingleChannel) {
     EXPECT_EQ(buffer, expected);
 }
 
-TEST(AudioGen, CanMixChannels) {
+TEST(Mixer, CanMixChannels) {
     std::vector<float> expected{1.0f, 0.5f, 1.0f, 0.5};
     std::vector<float> buffer(expected.size());
 
     // Sampling rate of 1hz and 2 channels
-    AudioGen ag(1, 2);
+    Mixer ag(1, 2);
 
     Sample s1{1.0f, 0};
     Sample s2{0, 0.5f};
