@@ -5,6 +5,25 @@
 
 class Sample {
     struct Loop {
+        enum class Type {
+            none
+        };
+        size_t begin;
+        size_t end;
+    };
+
+public:
+    struct LoopParams {
+        enum class Type {
+            non_looping,
+            forward_looping
+        };
+
+        LoopParams(Type t = Type::forward_looping, size_t b = 0, size_t e = 0)
+                     : type(t)
+                     , begin(b)
+                     , end(e) {}
+        Type   type;
         size_t begin;
         size_t end;
     };
@@ -12,8 +31,11 @@ class Sample {
 public:
     template<typename Iterator>
     Sample(Iterator b, Iterator e, size_t loopBegin_ = 0, size_t loopEnd_ = 0)
-            : _data(b, e), _loop{loopBegin_, loopEnd_ ? loopEnd_ : _data.size()} {}
-    Sample(std::initializer_list<float> il) : _data(il), _loop{0, _data.size()}  {}
+            : _data(b, e), _loop{LoopParams::Type::forward_looping,
+                                 loopBegin_, loopEnd_ ? loopEnd_ : _data.size()} {}
+    Sample(std::initializer_list<float> il, LoopParams loopParams=LoopParams())
+            : _data(il), _loop{loopParams.type, loopParams.begin,
+                               loopParams.end ? loopParams.end : _data.size()} {}
 
     inline float operator[](float i) const {
         auto wholeI = static_cast<size_t>(i);
@@ -32,6 +54,9 @@ public:
     inline size_t length() const {
         return _data.size();
     }
+    inline LoopParams::Type  loopType() const {
+        return _loop.type;
+    }
     inline size_t loopBegin() const {
         return _loop.begin;
     }
@@ -44,7 +69,7 @@ public:
 
 private:
     std::vector<float> _data;
-    Loop _loop;
+    LoopParams _loop;
 };
 
 #endif

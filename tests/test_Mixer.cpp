@@ -42,7 +42,7 @@ TEST(Mixer, CanRenderSingleChannel) {
             volume /= 2;
         }
 
-        Sample one{1.0f};
+        Sample one = {1.0f};
         float volume = 1;
     };
 

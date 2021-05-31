@@ -28,6 +28,12 @@ public:
         }
         while (framesPerBuffer--) {
             if (_sampleIndex >= _sample->loopEnd()) {
+                if (_sample->loopType() == Sample::LoopParams::Type::non_looping) {
+                    // If we're done with this sample fill the rest with zeros
+                    memset(outputBuffer, 0, framesPerBuffer * sizeof(outputBuffer[0]));
+                    // and leave.
+                    break;
+                }
                 _sampleIndex -= _sample->loopLength();
             }
             *outputBuffer++ = (*_sample)[_sampleIndex] * _volume;

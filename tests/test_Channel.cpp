@@ -18,7 +18,7 @@ TEST(Channel, CanHandleSingleSampleSample) {
     std::vector<float> expected{1.0f, 1.0f, 1.0f, 1.0f};
     std::vector<float> buffer(expected.size());
 
-    Sample sample{1.0f};
+    Sample sample({1.0f});
     Channel c;
     c.set_sample(&sample);
     c.set_frequency(1.0);
@@ -88,5 +88,22 @@ TEST(Channel, CanSetVolume) {
     c.set_volume(0.25);
     c.render(&buffer[6], 3, 1); 
 
+    EXPECT_EQ(buffer, expected);
+}
+
+TEST(Channel, CanRenderNonLoopingSample) {
+    // The sample plays then the channel goes silent
+    std::vector<float> expected{-1.0f, 1.0f, 0, 0};
+    std::vector<float> buffer(expected.size(), 0);
+
+    // Given that the sample is only two frames long
+    Sample sample({-1.0f, 1.0f}, {Sample::LoopParams::Type::non_looping});
+    Channel c;
+
+    c.set_sample(&sample);
+    // And we are rendering 4 frames
+    c.render(&buffer[0], 4, 1); 
+
+    // We expect two frames with the sample data, and two at zero
     EXPECT_EQ(buffer, expected);
 }
