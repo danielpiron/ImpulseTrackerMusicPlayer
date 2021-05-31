@@ -38,7 +38,7 @@ public:
 private:
     const Sample* _sample = nullptr;
     float _sampleIndex = 0;
-    float _frequency = 44100;
+    float _frequency = 1.0f;
     float _volume = 1.0f;
 };
 
