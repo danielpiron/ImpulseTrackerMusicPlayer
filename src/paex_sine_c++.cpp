@@ -66,7 +66,7 @@ int main() {
         
         void onAttachment(Mixer& audio) override {
             audio.set_samples_per_tick(static_cast<size_t>(44100 * 0.5f));
-            audio.channels[0].set_sample(&sineWave);
+            audio.channels[0].play(&sineWave);
         }
 
         void onTick(Mixer& audio) override {

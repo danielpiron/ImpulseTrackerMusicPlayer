@@ -6,9 +6,23 @@
 class Channel {
 
 public:
+
+    bool is_active() const {
+        return _is_active;
+    }
+
+    void play(const Sample* sample) {
+        set_sample(sample);
+        _sampleIndex = 0;
+        _is_active = true;
+    }
+
+    void stop() {
+        _is_active = false;
+    }
+
     void set_sample(const Sample* sample_) {
         _sample = sample_;
-        _sampleIndex = 0;
     }
 
     void set_frequency(const float freq) {
@@ -22,7 +36,7 @@ public:
     void render(float* outputBuffer, unsigned long framesPerBuffer, const unsigned int targetSampleRate) {
 
         float rate = _frequency / targetSampleRate;
-        if (_sample == nullptr) {
+        if (!is_active() || _sample == nullptr) {
             memset(outputBuffer, 0, framesPerBuffer * sizeof outputBuffer[0]);
             return;
         }
@@ -46,6 +60,7 @@ private:
     float _sampleIndex = 0;
     float _frequency = 1.0f;
     float _volume = 1.0f;
+    bool _is_active = false;
 };
 
 #endif

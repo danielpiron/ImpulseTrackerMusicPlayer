@@ -34,7 +34,7 @@ TEST(Mixer, CanRenderSingleChannel) {
     struct VolumeTweaker : public Mixer::TickHandler {
         void onAttachment(Mixer& audio) override {
             audio.channels[0].set_frequency(1.0f);
-            audio.channels[0].set_sample(&one);
+            audio.channels[0].play(&one);
             audio.set_samples_per_tick(2);
         }
         void onTick(Mixer& audio) override {
@@ -67,8 +67,8 @@ TEST(Mixer, CanMixChannels) {
 
     Sample s1{1.0f, 0};
     Sample s2{0, 0.5f};
-    ag.channels[0].set_sample(&s1);
-    ag.channels[1].set_sample(&s2);
+    ag.channels[0].play(&s1);
+    ag.channels[1].play(&s2);
 
     ag.render(&buffer[0], 4);
     EXPECT_EQ(buffer, expected);

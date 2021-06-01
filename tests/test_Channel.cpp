@@ -20,7 +20,7 @@ TEST(Channel, CanHandleSingleSampleSample) {
 
     Sample sample({1.0f});
     Channel c;
-    c.set_sample(&sample);
+    c.play(&sample);
     c.set_frequency(1.0);
     c.render(&buffer[0], 4, 1);
 
@@ -37,7 +37,7 @@ TEST(Channel, CanSpecifyFrequency) {
     Sample sample(expected.begin(), expected.begin() + 5);
 
     Channel c;
-    c.set_sample(&sample);
+    c.play(&sample);
 
     c.set_frequency(1.0);
     c.render(&buffer[0], 5, 1);
@@ -59,7 +59,7 @@ TEST(Channel, CanSpecifySampleRateOnRender) {
     Sample sample{0, 1.0f};
 
     Channel c;
-    c.set_sample(&sample);
+    c.play(&sample);
 
     // Our sample is only two samples long
     c.set_frequency(1.0);
@@ -78,7 +78,7 @@ TEST(Channel, CanSetVolume) {
     Sample sample{0, 0.5f, 1.0f, 0, 0.5f, 1.0f, 0, 0.5f, 1.0f};
 
     Channel c;
-    c.set_sample(&sample);
+    c.play(&sample);
     c.set_frequency(1.0);
 
     c.set_volume(1.0);
@@ -100,10 +100,25 @@ TEST(Channel, CanRenderNonLoopingSample) {
     Sample sample({-1.0f, 1.0f}, {Sample::LoopParams::Type::non_looping});
     Channel c;
 
-    c.set_sample(&sample);
+    c.play(&sample);
     // And we are rendering 4 frames
     c.render(&buffer[0], 4, 1); 
 
     // We expect two frames with the sample data, and two at zero
+    EXPECT_EQ(buffer, expected);
+}
+
+TEST(Channel, CanBeStopped) {
+    std::vector<float> expected{-1.0f, 1.0f, 0, 0};
+    std::vector<float> buffer(expected.size(), 0);
+
+    Sample sample({-1.0f, 1.0f});
+    Channel c;
+    
+    c.play(&sample);
+    c.render(&buffer[0], 2, 1); 
+    c.stop(); // Simulates a note cut
+    c.render(&buffer[2], 2, 1); 
+
     EXPECT_EQ(buffer, expected);
 }
