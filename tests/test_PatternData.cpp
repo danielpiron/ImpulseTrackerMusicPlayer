@@ -44,15 +44,38 @@ struct PatternEntry {
         }
     };
 
+    enum Command {
+        none,
+        set_volume
+    };
+
+    struct Effect {
+        Effect(Command comm=Command::none, int data=0)
+            : _comm(comm)
+            , _data(data) {}
+        Command _comm;
+        int _data;
+
+        bool operator==(const Effect& rhs) const {
+            return _comm == rhs._comm && _data == rhs._data;
+        }
+    };
+
     PatternEntry() = default;
-    PatternEntry(Note note) : _note(note) {}
+    PatternEntry(Note note, int inst=0, Effect vol=Effect())
+    : _note(note)
+    , _inst(inst)
+    , _volume_effect(vol) {}
+
     bool operator==(const PatternEntry& rhs) const {
         return _note == rhs._note &&
-               _inst == rhs._inst;
+               _inst == rhs._inst &&
+               _volume_effect == rhs._volume_effect;
     }
 
     Note _note{-1, -1};
     int _inst = 0;
+    Effect _volume_effect;
 };
 
 static const char* note_symbols[] = {
@@ -95,30 +118,29 @@ PatternEntry parse_pattern_text(const std::string& text) {
         octave = buffer[2] - '0';
     }
     int note = -1;
-    // TODO: Check for invalid octave
-    for (int i = 0; i < 12; i++) {
-        if (strncmp(&buffer[0], note_symbols[i], 2) == 0) {
-            note = i;
-            break;
+    if (octave != -1) {
+        for (int i = 0; i < 12; i++) {
+            if (strncmp(&buffer[0], note_symbols[i], 2) == 0) {
+                note = i;
+                break;
+            }
         }
     }
-    PatternEntry pe({note, octave});
-    pe._inst = atoi(&buffer[4]);
-    return pe;
+
+    PatternEntry::Command comm = PatternEntry::Command::none;
+    int volume = 0;
+    if (std::isdigit(buffer[7]) && std::isdigit(buffer[8])) {
+        comm  = PatternEntry::Command::set_volume;
+        volume = atoi(&buffer[7]);
+    }
+
+    return PatternEntry({note, octave}, atoi(&buffer[4]), {comm, volume});
 }
 
 TEST(ParsePatternsFromText, CanParseEmptyNotes) {
     PatternEntry expected;
     
     auto parsed_entry = parse_pattern_text("... .. .. .00");
-    EXPECT_EQ(parsed_entry, expected);
-}
-
-TEST(ParsePatternsFromText, CanParseInstrument) {
-    PatternEntry expected;
-    expected._inst = 4;
-    
-    auto parsed_entry = parse_pattern_text("... 04 .. .00");
     EXPECT_EQ(parsed_entry, expected);
 }
 
@@ -133,4 +155,23 @@ TEST(ParsePatternsFromText, CanParseNote) {
     EXPECT_EQ(parse_pattern_text("B-4 .. .. .00"), b_4);
     // Invalid string gives an empty note
     EXPECT_EQ(parse_pattern_text("ABC .. .. .00"), empty);
+    // First portion of note is acceptable, but octave is not
+    EXPECT_EQ(parse_pattern_text("A-C .. .. .00"), empty);
+}
+
+TEST(ParsePatternsFromText, CanParseInstrument) {
+
+    PatternEntry c_5_no_inst({0, 5});
+    PatternEntry c_5_with_inst({0, 5}, 1);
+    PatternEntry inst_alone({-1, -1}, 2);
+
+    EXPECT_EQ(parse_pattern_text("C-5 .. .. .00"), c_5_no_inst);
+    EXPECT_EQ(parse_pattern_text("C-5 01 .. .00"), c_5_with_inst);
+    EXPECT_EQ(parse_pattern_text("... 02 .. .00"), inst_alone);
+}
+
+TEST(ParsePatternsFromText, CanParseSetVolume) {
+    PatternEntry set_volume64({0, 5}, 0, {PatternEntry::Command::set_volume, 64});
+
+    EXPECT_EQ(parse_pattern_text("C-5 .. 64 .00"), set_volume64);
 }
