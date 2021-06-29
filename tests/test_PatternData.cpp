@@ -2,8 +2,6 @@
 
 #include <PatternEntry.h>
 
-#include <iostream>
-#include <iomanip>
 
 /*
  C-4 01 .. .00 - will play note C octave 4, instrument 1
@@ -39,116 +37,6 @@
             ... .. .. U00                       ... .. .. U83
             ... .. .. H00                       ... .. .. U83
 */
-
-static const char* note_symbols[] = {
-    "C-",  // 0
-    "C#",  // 1
-    "D-",  // 2
-    "D#",  // 3
-    "E-",  // 4
-    "F-",  // 5
-    "F#",  // 6
-    "G-",  // 7
-    "G#",  // 8
-    "A-",  // 9
-    "A#",  // 10
-    "B-"   // 11
-};
-
-std::ostream& operator<<(std::ostream& os, const PatternEntry::Note& note) {
-    if (note.is_empty()) {
-        os << "...";
-    } else if (note.is_note_off()) {
-        os << "---";
-    } else if (note.is_note_cut()) {
-        os << "^^^";
-    } else {
-        os << note_symbols[note.index()];
-        os << note.octave();
-    }
-
-    return os;
-}
-
-std::ostream& operator<<(std::ostream& os, const PatternEntry& pe) {
-    os << pe._note << " ";
-
-    if (pe._inst == 0) {
-        os << "..";
-    } else {
-        auto width = os.width();
-        auto fill = os.fill();
-        os << std::setfill('0') << std::setw(2) << pe._inst;
-        os << std::setfill(fill) << std::setw(static_cast<int>(width));
-    }
-    os << " ";
-
-    // Start Handle volume
-    os  << "..";
-    os  << " ";
-    // End Handle 
-    if (pe._effect == PatternEntry::Command::none) {
-        os << ".";
-    } else {
-        os << static_cast<char>('A' + pe._effect._comm - 1);
-    }
-
-    auto width = os.width();
-    auto fill = os.fill();
-    os << std::setfill('0') << std::setw(2) << pe._effect._data;
-    os << std::setfill(fill) << std::setw(static_cast<int>(width));
-
-    return os;
-}
-
-PatternEntry parse_pattern_text(const std::string& text) {
-
-    char buffer[14];
-
-    strncpy(buffer, text.c_str(), 13);
-
-    //        0123456789ABC
-    //       "C-5 04 32 G10"
-    //        |   |   |  +----- Effectj
-    // Note --+   |   +-----+
-    //            |         |
-    //       Instrument   Volume
-    //
-
-    (void)note_symbols;
-    // Insert null terminators between each segment
-    buffer[3] = '\0';
-    buffer[6] = '\0';
-    buffer[9] = '\0';
-
-    if (strncmp(&buffer[0], "^^^", 3) == 0) return PatternEntry::Note(PatternEntry::Note::Type::note_cut);
-
-    PatternEntry::Note note;
-    {
-        int octave = -1;
-        if (std::isdigit(buffer[2])) {
-            octave = buffer[2] - '0';
-        }
-        if (octave != -1) {
-            for (int i = 0; i < 12; i++) {
-                if (strncmp(&buffer[0], note_symbols[i], 2) == 0) {
-                    note = PatternEntry::Note(i, octave);
-                    break;
-                }
-            }
-        }
-    }
-
-
-    PatternEntry::Command comm = PatternEntry::Command::none;
-    int volume = 0;
-    if (std::isdigit(buffer[7]) && std::isdigit(buffer[8])) {
-        comm  = PatternEntry::Command::set_volume;
-        volume = atoi(&buffer[7]);
-    }
-
-    return PatternEntry(note, atoi(&buffer[4]), {comm, volume});
-}
 
 TEST(ParsePatternsFromText, CanParseEmptyNotes) {
     PatternEntry expected;
@@ -194,7 +82,7 @@ TEST(ParsePatternsFromText, CanParseSetVolume) {
 }
 
 TEST(ParsePatternsFromText, CanParseSetSpeed) {
-    PatternEntry set_speed6(PatternEntry::Note{0, 5}, 0, PatternEntry::Effect(), {PatternEntry::Command::set_speed, 6});
+    PatternEntry set_speed6(PatternEntry::Note{0, 4}, 0, PatternEntry::Effect(), {PatternEntry::Command::set_speed, 6});
     PatternEntry set_speed4(PatternEntry::Note(), 0, PatternEntry::Effect(), {PatternEntry::Command::set_speed, 4});
 
     EXPECT_EQ(parse_pattern_text("C-4 .. .. A06"), set_speed6);

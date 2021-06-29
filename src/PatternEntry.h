@@ -2,6 +2,7 @@
 #define _PATTERN_ENTRY_H_
 
 #include <cstdint>
+#include <iostream>
 
 struct PatternEntry {
 
@@ -80,7 +81,8 @@ struct PatternEntry {
     bool operator==(const PatternEntry& rhs) const {
         return _note == rhs._note &&
                _inst == rhs._inst &&
-               _volume_effect == rhs._volume_effect;
+               _volume_effect == rhs._volume_effect &&
+               _effect == rhs._effect;
     }
 
     Note _note;
@@ -88,5 +90,9 @@ struct PatternEntry {
     Effect _volume_effect;
     Effect _effect;
 };
+
+std::ostream& operator<<(std::ostream& os, const PatternEntry::Note& note);
+std::ostream& operator<<(std::ostream& os, const PatternEntry& pe);
+PatternEntry parse_pattern_text(const std::string& text);
 
 #endif
