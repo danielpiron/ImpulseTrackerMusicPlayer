@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include <Mixer.h>
+#include <player/Mixer.h>
 
 #include <algorithm>
 #include <vector>

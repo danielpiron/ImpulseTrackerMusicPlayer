@@ -1,6 +1,6 @@
 #include <portaudio.h>
 
-#include "Mixer.h"
+#include <player/Mixer.h>
 
 #include <cmath>
 #include <iostream>

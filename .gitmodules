@@ -1,6 +1,3 @@
 [submodule "vendors/portaudio"]
 	path = vendors/portaudio
 	url = git@github.com:PortAudio/portaudio.git
-[submodule "vendors/googletest"]
-	path = vendors/googletest
-	url = git@github.com:google/googletest.git

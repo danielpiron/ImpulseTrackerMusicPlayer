@@ -4,7 +4,7 @@
 #include <list>
 #include <vector>
 
-#include <Channel.h>
+#include "Channel.h"
 
 struct Mixer {
 

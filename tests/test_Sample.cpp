@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include <Sample.h>
+#include <player/Sample.h>
 
 #include <vector>
 

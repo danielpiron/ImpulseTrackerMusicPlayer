@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include <Channel.h>
+#include <player/Channel.h>
 
 #include <vector>
 
