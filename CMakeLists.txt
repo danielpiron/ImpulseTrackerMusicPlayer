@@ -10,12 +10,11 @@ enable_testing()
 
 file(GLOB PLAYER_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/src/player/*.cpp)
 add_subdirectory(tests)
-add_subdirectory(dependencies/portaudio)
+add_subdirectory(deps/portaudio)
 
 add_executable(player ${PLAYER_SOURCE} src/paex_sine_c++.cpp)
 target_link_libraries(player PUBLIC portaudio)
-# target_include_directories(player PRIVATE "${PROJECT_BINARY_DIR}" ${CMAKE_CURRENT_SOURCE_DIR}/src)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
+target_include_directories(player PRIVATE "${PROJECT_BINARY_DIR}" ${CMAKE_CURRENT_SOURCE_DIR}/src)
 target_include_directories(player PUBLIC "${PROJECT_BINARY_DIR}" ${CMAKE_CURRENT_SOURCE_DIR}/vendors/portaudio/include)
 
 
