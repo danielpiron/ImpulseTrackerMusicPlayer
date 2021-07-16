@@ -16,8 +16,3 @@ add_executable(player ${PLAYER_SOURCE} src/paex_sine_c++.cpp)
 target_link_libraries(player PUBLIC portaudio)
 target_include_directories(player PRIVATE "${PROJECT_BINARY_DIR}" ${CMAKE_CURRENT_SOURCE_DIR}/src)
 target_include_directories(player PUBLIC "${PROJECT_BINARY_DIR}" ${CMAKE_CURRENT_SOURCE_DIR}/vendors/portaudio/include)
-
-
-set(CPACK_PROJECT_NAME ${PROJECT_NAME})
-set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
-include(CPack)

@@ -6,8 +6,9 @@
 
 #include "Channel.h"
 
-struct Mixer {
+class Mixer {
 
+public:
     struct TickHandler {
         virtual void onAttachment(Mixer& audio) = 0;
         virtual void onTick(Mixer& audio) = 0;
@@ -15,12 +16,12 @@ struct Mixer {
     };
 
     Mixer(const unsigned int sample_rate_ = 1, const size_t channel_count = 1)
-    : sample_rate(sample_rate_)
-    , auxilliary_buffer(1024) 
-    , channels(channel_count) {}
+    : _sample_rate(sample_rate_)
+    , _auxilliary_buffer(1024) 
+    , _channels(channel_count) {}
 
     void attach_handler(TickHandler* handler) {
-        handlers.push_back(handler);
+        _handlers.push_back(handler);
         handler->onAttachment(*this);
     }
 
@@ -29,38 +30,43 @@ struct Mixer {
         memset(outputBuffer, 0, samplesToFill * sizeof(float));
 
         while (samplesToFill) {
-            if (samples_until_next_tick == 0) {
-                for (auto handler : handlers) {
+            if (_samples_until_next_tick == 0) {
+                for (auto handler : _handlers) {
                     handler->onTick(*this);
                 }
-                samples_until_next_tick = samples_per_tick;
+                _samples_until_next_tick = _samples_per_tick;
             }
 
-            auto samples_to_render = std::min(samples_until_next_tick, samplesToFill);
+            auto samples_to_render = std::min(_samples_until_next_tick, samplesToFill);
 
             samplesToFill -= samples_to_render;
-            samples_until_next_tick -= samples_to_render;
-            for (auto& channel : channels) {
-                channel.render(&auxilliary_buffer[0], samples_to_render, sample_rate);
+            _samples_until_next_tick -= samples_to_render;
+            for (auto& channel : _channels) {
+                channel.render(&_auxilliary_buffer[0], samples_to_render, _sample_rate);
                 for (size_t i = 0; i < samples_to_render; ++i) {
-                    outputBuffer[i] += auxilliary_buffer[i];
+                    outputBuffer[i] += _auxilliary_buffer[i];
                 }
             }
             outputBuffer += samples_to_render;
         }
     }
 
-    void set_samples_per_tick(size_t spt) {
-        samples_per_tick = spt;
+    Channel& channel(size_t c) {
+        return _channels[c];
     }
 
-    size_t samples_until_next_tick = 0;
-    size_t samples_per_tick = 1;
-    unsigned int sample_rate = 1;
-    std::vector<float> auxilliary_buffer;
+    void set_samples_per_tick(size_t spt) {
+        _samples_per_tick = spt;
+    }
 
-    std::list<TickHandler*> handlers;
-    std::vector<Channel> channels;
+private:
+    size_t _samples_until_next_tick = 0;
+    size_t _samples_per_tick = 1;
+    unsigned int _sample_rate = 1;
+    std::vector<float> _auxilliary_buffer;
+
+    std::list<TickHandler*> _handlers;
+    std::vector<Channel> _channels;
 };
 
 #endif
