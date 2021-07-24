@@ -4,7 +4,8 @@
 
 #include <vector>
 
-TEST(Sample, CanAcceptInitializerList) {
+TEST(Sample, CanAcceptInitializerList)
+{
     Sample sample{0, 1.0f, 0, 1.0f};
 
     ASSERT_EQ(sample.length(), 4UL);
@@ -14,7 +15,8 @@ TEST(Sample, CanAcceptInitializerList) {
     EXPECT_EQ(sample[3UL], 1.0f);
 }
 
-TEST(Sample, CanAcceptFloatIndiciesAndLerp) {
+TEST(Sample, CanAcceptFloatIndiciesAndLerp)
+{
     Sample sample{0, 1.0f, 0.80f};
 
     EXPECT_EQ(sample[0.5f], 0.5f);
@@ -23,18 +25,21 @@ TEST(Sample, CanAcceptFloatIndiciesAndLerp) {
     EXPECT_EQ(sample[1.5f], 0.90f);
 }
 
-TEST(Sample, CanLerpPastLastIndex) {
+TEST(Sample, CanLerpPastLastIndex)
+{
     Sample sample{0, 1.0f};
     EXPECT_EQ(sample[1.5f], 0.5f);
 }
 
-TEST(Sample, HasDefaultLoopParams) {
+TEST(Sample, HasDefaultLoopParams)
+{
     Sample sample{0, 1.0f};
     EXPECT_EQ(sample.loopBegin(), 0UL);
     EXPECT_EQ(sample.loopEnd(), 2UL);
 }
 
-TEST(Sample, CanSpecifyLoopParamsInConstructor) {
+TEST(Sample, CanSpecifyLoopParamsInConstructor)
+{
     std::vector<float> sample_data{0, 0.25f, 0.5f, 0.75f, 1.0f};
     Sample sample(sample_data.begin(), sample_data.end(), 1, 4);
 
@@ -49,14 +54,16 @@ TEST(Sample, CanSpecifyLoopParamsInConstructor) {
     EXPECT_EQ(sample.loopEnd(), 4UL);
 }
 
-TEST(Sample, CanLerpToLoopBegin) {
+TEST(Sample, CanLerpToLoopBegin)
+{
     std::vector<float> sample_data{0, 0.25f, 0.5f, 0.75f, 1.0f};
     Sample sample(sample_data.begin(), sample_data.end(), 2);
 
     EXPECT_EQ(sample[4.5f], 0.75f);
 }
 
-TEST(Sample, CanLerpPastLoopEnd) {
+TEST(Sample, CanLerpPastLoopEnd)
+{
     std::vector<float> sample_data{0, 0.25f, 0.5f, 0.75f, 1.0f};
     Sample sample(sample_data.begin(), sample_data.end(), 1, 4);
 

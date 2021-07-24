@@ -6,16 +6,11 @@
 #include <iostream>
 #include <vector>
 
-static int patestCallback(const void *inputBuffer, void *outputBuffer,
+static int patestCallback(const void*, void* outputBuffer,
                           unsigned long framesPerBuffer,
-                          const PaStreamCallbackTimeInfo* timeInfo,
-                          PaStreamCallbackFlags statusFlags,
-                          void *userData )
+                          const PaStreamCallbackTimeInfo*,
+                          PaStreamCallbackFlags, void* userData)
 {
-    (void)inputBuffer;
-    (void)timeInfo;
-    (void)statusFlags;
-
     auto mixer = reinterpret_cast<Mixer*>(userData);
     auto pOut = reinterpret_cast<float*>(outputBuffer);
     mixer->render(pOut, framesPerBuffer);
@@ -29,7 +24,8 @@ static void StreamFinished(void* userData)
     std::cout << "Stream complete" << std::endl;
 }
 
-int main() {
+int main()
+{
 
     PaError err;
     err = Pa_Initialize();
@@ -45,34 +41,39 @@ int main() {
     }
     outputParameters.channelCount = 1;
     outputParameters.sampleFormat = paFloat32;
-    outputParameters.suggestedLatency = Pa_GetDeviceInfo(outputParameters.device)->defaultLowOutputLatency;
+    outputParameters.suggestedLatency =
+        Pa_GetDeviceInfo(outputParameters.device)->defaultLowOutputLatency;
     outputParameters.hostApiSpecificStreamInfo = NULL;
 
     struct ScalePlayer : public Mixer::TickHandler {
 
-        static Sample generateSinewave() {
+        static Sample generateSinewave()
+        {
             std::vector<float> sampleData(400);
             for (size_t i = 0; i < sampleData.size(); ++i) {
-                sampleData[i] = static_cast<float>(sin(M_PI * 2 * i / sampleData.size()));
+                sampleData[i] =
+                    static_cast<float>(sin(M_PI * 2 * i / sampleData.size()));
             }
             return Sample(sampleData.begin(), sampleData.end());
         }
 
         ScalePlayer(std::initializer_list<float> l)
-            : sineWave(generateSinewave())
-            , notes(l)
-            , index(0) {
+            : sineWave(generateSinewave()), notes(l), index(0)
+        {
         }
-        
-        void onAttachment(Mixer& audio) override {
+
+        void onAttachment(Mixer& audio) override
+        {
             audio.set_samples_per_tick(static_cast<size_t>(44100 * 0.5f));
             audio.channel(0).play(&sineWave);
         }
 
-        void onTick(Mixer& audio) override {
-           audio.channel(0).set_frequency(sineWave.length() * notes[index++ % notes.size()]);
+        void onTick(Mixer& audio) override
+        {
+            audio.channel(0).set_frequency(sineWave.length() *
+                                           notes[index++ % notes.size()]);
         }
-        
+
         Sample sineWave;
         std::vector<float> notes;
         size_t index;
@@ -80,32 +81,26 @@ int main() {
 
     Mixer mixer(44100, 1);
     ScalePlayer player{
-           523.25f,  // C5
-//         554.37f,  // C#5
-           587.33f,  // D5
-//         622.25f,  // D#5
-           659.25f,  // E5
-           698.46f,  // F5
-//         739.99f,  // F#5
-           783.99f,  // G5
-//         830.61f,  // G#5
-           880.00f,  // A5
-//         932.33f,  // A#5
-           987.77f,  // B5
-           1046.50f // C6
+        523.25f, // C5
+                 //         554.37f,  // C#5
+        587.33f, // D5
+                 //         622.25f,  // D#5
+        659.25f, // E5
+        698.46f, // F5
+                 //         739.99f,  // F#5
+        783.99f, // G5
+                 //         830.61f,  // G#5
+        880.00f, // A5
+                 //         932.33f,  // A#5
+        987.77f, // B5
+        1046.50f // C6
     };
     mixer.attach_handler(&player);
 
     PaStream* stream = nullptr;
-    err = Pa_OpenStream(
-        &stream,
-        NULL,
-        &outputParameters,
-        44100,
-        paFramesPerBufferUnspecified,
-        paClipOff,
-        patestCallback,
-        reinterpret_cast<void*>(&mixer));
+    err = Pa_OpenStream(&stream, NULL, &outputParameters, 44100,
+                        paFramesPerBufferUnspecified, paClipOff, patestCallback,
+                        reinterpret_cast<void*>(&mixer));
     if (err != paNoError) {
         std::cerr << "Error opening stream" << std::endl;
         return 1;

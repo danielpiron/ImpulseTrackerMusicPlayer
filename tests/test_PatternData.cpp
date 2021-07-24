@@ -2,7 +2,6 @@
 
 #include <player/PatternEntry.h>
 
-
 /*
  C-4 01 .. .00 - will play note C octave 4, instrument 1
  D-4 .. .. .00 - will play note D, octave 4, instrument 1
@@ -38,14 +37,16 @@
             ... .. .. H00                       ... .. .. U83
 */
 
-TEST(ParsePatternsFromText, CanParseEmptyNotes) {
+TEST(ParsePatternsFromText, CanParseEmptyNotes)
+{
     PatternEntry expected;
-    
+
     auto parsed_entry = parse_pattern_text("... .. .. .00");
     EXPECT_EQ(parsed_entry, expected);
 }
 
-TEST(ParsePatternsFromText, CanParseNote) {
+TEST(ParsePatternsFromText, CanParseNote)
+{
     PatternEntry c_5(PatternEntry::Note{0, 5});
     PatternEntry fsharp3(PatternEntry::Note{6, 3});
     PatternEntry b_4(PatternEntry::Note{11, 4});
@@ -60,11 +61,14 @@ TEST(ParsePatternsFromText, CanParseNote) {
     EXPECT_EQ(parse_pattern_text("A-C .. .. .00"), empty);
 }
 
-TEST(ParsePatternsFromText, CanParseNoteCut) {
-    EXPECT_EQ(parse_pattern_text("^^^ .. .. .00"), PatternEntry::Note(PatternEntry::Note::Type::note_cut));
+TEST(ParsePatternsFromText, CanParseNoteCut)
+{
+    EXPECT_EQ(parse_pattern_text("^^^ .. .. .00"),
+              PatternEntry::Note(PatternEntry::Note::Type::note_cut));
 }
 
-TEST(ParsePatternsFromText, CanParseInstrument) {
+TEST(ParsePatternsFromText, CanParseInstrument)
+{
 
     PatternEntry c_5_no_inst(PatternEntry::Note{0, 5});
     PatternEntry c_5_with_inst(PatternEntry::Note{0, 5}, 1);
@@ -75,15 +79,20 @@ TEST(ParsePatternsFromText, CanParseInstrument) {
     EXPECT_EQ(parse_pattern_text("... 02 .. .00"), inst_alone);
 }
 
-TEST(ParsePatternsFromText, CanParseSetVolume) {
-    PatternEntry set_volume64(PatternEntry::Note{0, 5}, 0, {PatternEntry::Command::set_volume, 64});
+TEST(ParsePatternsFromText, CanParseSetVolume)
+{
+    PatternEntry set_volume64(PatternEntry::Note{0, 5}, 0,
+                              {PatternEntry::Command::set_volume, 64});
 
     EXPECT_EQ(parse_pattern_text("C-5 .. 64 .00"), set_volume64);
 }
 
-TEST(ParsePatternsFromText, CanParseSetSpeed) {
-    PatternEntry set_speed6(PatternEntry::Note{0, 4}, 0, PatternEntry::Effect(), {PatternEntry::Command::set_speed, 6});
-    PatternEntry set_speed4(PatternEntry::Note(), 0, PatternEntry::Effect(), {PatternEntry::Command::set_speed, 4});
+TEST(ParsePatternsFromText, CanParseSetSpeed)
+{
+    PatternEntry set_speed6(PatternEntry::Note{0, 4}, 0, PatternEntry::Effect(),
+                            {PatternEntry::Command::set_speed, 6});
+    PatternEntry set_speed4(PatternEntry::Note(), 0, PatternEntry::Effect(),
+                            {PatternEntry::Command::set_speed, 4});
 
     EXPECT_EQ(parse_pattern_text("C-4 .. .. A06"), set_speed6);
     EXPECT_EQ(parse_pattern_text("... .. .. A04"), set_speed4);

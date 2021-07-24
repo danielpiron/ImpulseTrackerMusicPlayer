@@ -9,7 +9,7 @@ struct PatternEntry {
     using Inst = uint8_t;
 
     class Note {
-    public:
+      public:
         enum class Type : uint8_t {
             empty = 253,
             note_off = 254,
@@ -30,41 +30,45 @@ struct PatternEntry {
             b_natural
         };
 
-    public:
+      public:
         Note() : _type(Type::empty) {}
-        
-        explicit Note(int index, int octave) : _value(static_cast<uint8_t>(octave * 12 + index)) {}
-        explicit Note(Name name, int octave) : Note(static_cast<int>(name), octave) {}
+
+        explicit Note(int index, int octave)
+            : _value(static_cast<uint8_t>(octave * 12 + index))
+        {
+        }
+        explicit Note(Name name, int octave)
+            : Note(static_cast<int>(name), octave)
+        {
+        }
         explicit Note(Type type) : _type(type) {}
 
-        Name name() const { return static_cast<Name>(index());}
-        int index() const { return _value % 12;}
-        int octave() const { return _value / 12;}
+        Name name() const { return static_cast<Name>(index()); }
+        int index() const { return _value % 12; }
+        int octave() const { return _value / 12; }
         bool is_empty() const { return _type == Type::empty; }
         bool is_note_cut() const { return _type == Type::note_cut; }
         bool is_note_off() const { return _type == Type::note_off; }
 
         operator int() const { return _value; }
 
-    private:
+      private:
         union {
             uint8_t _value;
             Type _type;
         };
     };
 
-    enum Command {
-        none,
-        set_speed,
-        set_volume
-    };
+    enum Command { none, set_speed, set_volume };
 
     struct Effect {
-        Effect(Command comm=Command::none, int data=0)
-            : _comm(comm)
-            , _data(static_cast<uint8_t>(data)) {}
+        Effect(Command comm = Command::none, int data = 0)
+            : _comm(comm), _data(static_cast<uint8_t>(data))
+        {
+        }
 
-        bool operator==(const Effect& rhs) const {
+        bool operator==(const Effect& rhs) const
+        {
             return _comm == rhs._comm && _data == rhs._data;
         }
 
@@ -72,17 +76,17 @@ struct PatternEntry {
         uint8_t _data;
     };
 
-    PatternEntry(Note note=Note(), int inst=0, Effect vol=Effect(), Effect effect=Effect())
-    : _note(note)
-    , _inst(static_cast<Inst>(inst))
-    , _volume_effect(vol)
-    , _effect(effect) {}
+    PatternEntry(Note note = Note(), int inst = 0, Effect vol = Effect(),
+                 Effect effect = Effect())
+        : _note(note), _inst(static_cast<Inst>(inst)), _volume_effect(vol),
+          _effect(effect)
+    {
+    }
 
-    bool operator==(const PatternEntry& rhs) const {
-        return _note == rhs._note &&
-               _inst == rhs._inst &&
-               _volume_effect == rhs._volume_effect &&
-               _effect == rhs._effect;
+    bool operator==(const PatternEntry& rhs) const
+    {
+        return _note == rhs._note && _inst == rhs._inst &&
+               _volume_effect == rhs._volume_effect && _effect == rhs._effect;
     }
 
     Note _note;
