@@ -10,9 +10,6 @@ FetchContent_MakeAvailable(googletest)
 
 file(GLOB TEST_PLAYER_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/test_*.cpp)
 
-MESSAGE(STATUS BLASH ${PLAYER_SOURCE})
-MESSAGE(STATUS BLOOSH ${TEST_PLAYER_SOURCE})
-
 add_executable(
   test_player
   ${PLAYER_SOURCE}
@@ -20,10 +17,12 @@ add_executable(
   ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
 )
 target_include_directories(test_player PUBLIC "${PROJECT_BINARY_DIR}" ${CMAKE_CURRENT_SOURCE_DIR}/../src)
+
 target_link_libraries(
   test_player
   gtest_main
 )
+target_compile_options(test_player PUBLIC ${CLANG_WARNINGS})
 
 include(GoogleTest)
 gtest_discover_tests(test_player)

@@ -76,7 +76,7 @@ int parse_hex_digit(char digit)
 
 static PatternEntry::Note
 parse_pattern_entry_note(std::string::const_iterator& curr,
-                         const std::string::const_iterator& last)
+                         const std::string::const_iterator&)
 {
     char buffer[4];
     for (size_t i = 0; i < 3; ++i) {
@@ -104,19 +104,19 @@ parse_pattern_entry_note(std::string::const_iterator& curr,
 
 static PatternEntry::Inst
 parse_pattern_entry_inst(std::string::const_iterator& curr,
-                         const std::string::const_iterator& last)
+                         const std::string::const_iterator&)
 {
     char buffer[3];
     for (size_t i = 0; i < 2; ++i) {
         buffer[i] = *curr++;
     }
     buffer[2] = '\0';
-    return std::atoi(buffer);
+    return static_cast<PatternEntry::Inst>(std::atoi(buffer));
 }
 
 static PatternEntry::Effect
 parse_pattern_entry_vol_effect(std::string::const_iterator& curr,
-                               const std::string::const_iterator& last)
+                               const std::string::const_iterator&)
 {
     char buffer[3];
     for (size_t i = 0; i < 2; ++i) {
@@ -135,7 +135,7 @@ parse_pattern_entry_vol_effect(std::string::const_iterator& curr,
 
 static PatternEntry::Effect
 parse_pattern_entry_effect(std::string::const_iterator& curr,
-                           const std::string::const_iterator& last)
+                           const std::string::const_iterator&)
 {
     char column[4];
     for (size_t i = 0; i < 3; ++i) {
