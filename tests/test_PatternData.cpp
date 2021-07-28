@@ -105,3 +105,25 @@ TEST(ParsePatternsFromText, CanParseSetSpeed)
     EXPECT_EQ(parse_pattern_entry("C-4 .. .. A06"), set_speed6);
     EXPECT_EQ(parse_pattern_entry("... .. .. A04"), set_speed4);
 }
+
+TEST(ParsePatternsFromText, CanParseEmpty)
+{
+    Pattern expected(10);
+    Pattern result(10);
+    ASSERT_TRUE(parse_pattern("", expected));
+    EXPECT_EQ(result, expected);
+}
+
+TEST(ParsePatternsFromText, CanParseSingleEntry)
+{
+    Pattern expected(10);
+    Pattern result(10);
+
+    expected.channel(0).row(0) = {PatternEntry::Note{0, 4},
+                                  0,
+                                  PatternEntry::Effect(),
+                                  {PatternEntry::Command::set_speed, 6}};
+
+    ASSERT_TRUE(parse_pattern("C-4 .. .. A06", result));
+    EXPECT_EQ(result, expected);
+}
