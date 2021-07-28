@@ -90,7 +90,7 @@ PatternEntry::Effect parse_effects_column(const char* column)
     return {comm, static_cast<uint8_t>(data)};
 }
 
-PatternEntry parse_pattern_text(const std::string& text)
+PatternEntry parse_pattern_entry(const std::string& text)
 {
 
     char buffer[14];

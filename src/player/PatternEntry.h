@@ -97,6 +97,6 @@ struct PatternEntry {
 
 std::ostream& operator<<(std::ostream& os, const PatternEntry::Note& note);
 std::ostream& operator<<(std::ostream& os, const PatternEntry& pe);
-PatternEntry parse_pattern_text(const std::string& text);
+PatternEntry parse_pattern_entry(const std::string& text);
 
 #endif

@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include <player/PatternEntry.h>
+#include <player/Pattern.h>
 
 /*
  C-4 01 .. .00 - will play note C octave 4, instrument 1
@@ -41,7 +41,7 @@ TEST(ParsePatternsFromText, CanParseEmptyNotes)
 {
     PatternEntry expected;
 
-    auto parsed_entry = parse_pattern_text("... .. .. .00");
+    auto parsed_entry = parse_pattern_entry("... .. .. .00");
     EXPECT_EQ(parsed_entry, expected);
 }
 
@@ -52,18 +52,18 @@ TEST(ParsePatternsFromText, CanParseNote)
     PatternEntry b_4(PatternEntry::Note{11, 4});
     PatternEntry empty;
 
-    EXPECT_EQ(parse_pattern_text("C-5 .. .. .00"), c_5);
-    EXPECT_EQ(parse_pattern_text("F#3 .. .. .00"), fsharp3);
-    EXPECT_EQ(parse_pattern_text("B-4 .. .. .00"), b_4);
+    EXPECT_EQ(parse_pattern_entry("C-5 .. .. .00"), c_5);
+    EXPECT_EQ(parse_pattern_entry("F#3 .. .. .00"), fsharp3);
+    EXPECT_EQ(parse_pattern_entry("B-4 .. .. .00"), b_4);
     // Invalid string gives an empty note
-    EXPECT_EQ(parse_pattern_text("ABC .. .. .00"), empty);
+    EXPECT_EQ(parse_pattern_entry("ABC .. .. .00"), empty);
     // First portion of note is acceptable, but octave is not
-    EXPECT_EQ(parse_pattern_text("A-C .. .. .00"), empty);
+    EXPECT_EQ(parse_pattern_entry("A-C .. .. .00"), empty);
 }
 
 TEST(ParsePatternsFromText, CanParseNoteCut)
 {
-    EXPECT_EQ(parse_pattern_text("^^^ .. .. .00"),
+    EXPECT_EQ(parse_pattern_entry("^^^ .. .. .00"),
               PatternEntry::Note(PatternEntry::Note::Type::note_cut));
 }
 
@@ -74,9 +74,9 @@ TEST(ParsePatternsFromText, CanParseInstrument)
     PatternEntry c_5_with_inst(PatternEntry::Note{0, 5}, 1);
     PatternEntry inst_alone(PatternEntry::Note(), 2);
 
-    EXPECT_EQ(parse_pattern_text("C-5 .. .. .00"), c_5_no_inst);
-    EXPECT_EQ(parse_pattern_text("C-5 01 .. .00"), c_5_with_inst);
-    EXPECT_EQ(parse_pattern_text("... 02 .. .00"), inst_alone);
+    EXPECT_EQ(parse_pattern_entry("C-5 .. .. .00"), c_5_no_inst);
+    EXPECT_EQ(parse_pattern_entry("C-5 01 .. .00"), c_5_with_inst);
+    EXPECT_EQ(parse_pattern_entry("... 02 .. .00"), inst_alone);
 }
 
 TEST(ParsePatternsFromText, CanParseSetVolume)
@@ -84,7 +84,7 @@ TEST(ParsePatternsFromText, CanParseSetVolume)
     PatternEntry set_volume64(PatternEntry::Note{0, 5}, 0,
                               {PatternEntry::Command::set_volume, 64});
 
-    EXPECT_EQ(parse_pattern_text("C-5 .. 64 .00"), set_volume64);
+    EXPECT_EQ(parse_pattern_entry("C-5 .. 64 .00"), set_volume64);
 }
 
 TEST(ParsePatternsFromText, CanParseSetSpeed)
@@ -94,6 +94,6 @@ TEST(ParsePatternsFromText, CanParseSetSpeed)
     PatternEntry set_speed4(PatternEntry::Note(), 0, PatternEntry::Effect(),
                             {PatternEntry::Command::set_speed, 4});
 
-    EXPECT_EQ(parse_pattern_text("C-4 .. .. A06"), set_speed6);
-    EXPECT_EQ(parse_pattern_text("... .. .. A04"), set_speed4);
+    EXPECT_EQ(parse_pattern_entry("C-4 .. .. A06"), set_speed6);
+    EXPECT_EQ(parse_pattern_entry("... .. .. A04"), set_speed4);
 }
