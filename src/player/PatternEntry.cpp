@@ -90,52 +90,62 @@ PatternEntry::Effect parse_effects_column(const char* column)
     return {comm, static_cast<uint8_t>(data)};
 }
 
+PatternEntry parse_pattern_entry(std::string::const_iterator& curr,
+                                 const std::string::const_iterator& last)
+{
+    return PatternEntry();
+}
+
 PatternEntry parse_pattern_entry(const std::string& text)
 {
+    auto start = text.begin();
+    parse_pattern_entry(start, text.end());
 
-    char buffer[14];
+    /*
+        char buffer[14];
 
-    strncpy(buffer, text.c_str(), 13);
+        strncpy(buffer, text.c_str(), 13);
 
-    //        0123456789ABC
-    //       "C-5 04 32 G10"
-    //        |   |   |  +----- Effect
-    // Note --+   |   +-----+
-    //            |         |
-    //       Instrument   Volume
-    //
+        //        0123456789ABC
+        //       "C-5 04 32 G10"
+        //        |   |   |  +----- Effect
+        // Note --+   |   +-----+
+        //            |         |
+        //       Instrument   Volume
+        //
 
-    (void)note_symbols;
-    // Insert null terminators between each segment
-    buffer[3] = '\0';
-    buffer[6] = '\0';
-    buffer[9] = '\0';
+        (void)note_symbols;
+        // Insert null terminators between each segment
+        buffer[3] = '\0';
+        buffer[6] = '\0';
+        buffer[9] = '\0';
 
-    if (strncmp(&buffer[0], "^^^", 3) == 0)
-        return PatternEntry::Note(PatternEntry::Note::Type::note_cut);
+        if (strncmp(&buffer[0], "^^^", 3) == 0)
+            return PatternEntry::Note(PatternEntry::Note::Type::note_cut);
 
-    PatternEntry::Note note;
-    {
-        int octave = -1;
-        if (std::isdigit(buffer[2])) {
-            octave = buffer[2] - '0';
-        }
-        if (octave != -1) {
-            for (int i = 0; i < 12; i++) {
-                if (strncmp(&buffer[0], note_symbols[i], 2) == 0) {
-                    note = PatternEntry::Note(i, octave);
-                    break;
+        PatternEntry::Note note;
+        {
+            int octave = -1;
+            if (std::isdigit(buffer[2])) {
+                octave = buffer[2] - '0';
+            }
+            if (octave != -1) {
+                for (int i = 0; i < 12; i++) {
+                    if (strncmp(&buffer[0], note_symbols[i], 2) == 0) {
+                        note = PatternEntry::Note(i, octave);
+                        break;
+                    }
                 }
             }
         }
-    }
 
-    PatternEntry::Command comm = PatternEntry::Command::none;
-    int volume = 0;
-    if (std::isdigit(buffer[7]) && std::isdigit(buffer[8])) {
-        comm = PatternEntry::Command::set_volume;
-        volume = atoi(&buffer[7]);
-    }
-    return PatternEntry(note, atoi(&buffer[4]), {comm, volume},
-                        parse_effects_column(&buffer[10]));
+        PatternEntry::Command comm = PatternEntry::Command::none;
+        int volume = 0;
+        if (std::isdigit(buffer[7]) && std::isdigit(buffer[8])) {
+            comm = PatternEntry::Command::set_volume;
+            volume = atoi(&buffer[7]);
+        }
+        return PatternEntry(note, atoi(&buffer[4]), {comm, volume},
+                            parse_effects_column(&buffer[10]));
+        */
 }
