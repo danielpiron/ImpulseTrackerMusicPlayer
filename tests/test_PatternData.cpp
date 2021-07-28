@@ -45,6 +45,14 @@ TEST(ParsePatternsFromText, CanParseEmptyNotes)
     EXPECT_EQ(parsed_entry, expected);
 }
 
+TEST(ParsePatternsFromText, CanSkipLeadingSpace)
+{
+    PatternEntry expected(PatternEntry::Note{0, 5});
+
+    auto parsed_entry = parse_pattern_entry("   C-5 .. .. .00");
+    EXPECT_EQ(parsed_entry, expected);
+}
+
 TEST(ParsePatternsFromText, CanParseNote)
 {
     PatternEntry c_5(PatternEntry::Note{0, 5});
