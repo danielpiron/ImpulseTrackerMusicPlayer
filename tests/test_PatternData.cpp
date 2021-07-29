@@ -108,16 +108,16 @@ TEST(ParsePatternsFromText, CanParseSetSpeed)
 
 TEST(ParsePatternsFromText, CanParseEmpty)
 {
-    Pattern expected(10);
-    Pattern result(10);
+    Pattern expected(4);
+    Pattern result(4);
     ASSERT_TRUE(parse_pattern("", expected));
     EXPECT_EQ(result, expected);
 }
 
 TEST(ParsePatternsFromText, CanParseSingleEntry)
 {
-    Pattern expected(10);
-    Pattern result(10);
+    Pattern expected(4);
+    Pattern result(4);
 
     expected.channel(0).row(0) = {PatternEntry::Note{0, 4},
                                   0,
@@ -125,5 +125,34 @@ TEST(ParsePatternsFromText, CanParseSingleEntry)
                                   {PatternEntry::Command::set_speed, 6}};
 
     ASSERT_TRUE(parse_pattern("C-4 .. .. A06", result));
+    EXPECT_EQ(result, expected);
+}
+
+TEST(ParsePatternsFromText, CanParseSingleChannel)
+{
+    using NoteName = Pattern::Entry::Note::Name;
+
+    Pattern expected(8);
+    Pattern result(8);
+
+    expected.channel(0).row(0) = {PatternEntry::Note{NoteName::c_natural, 4},
+                                  1};
+    expected.channel(0).row(2) = {PatternEntry::Note{NoteName::e_natural, 4},
+                                  1};
+    expected.channel(0).row(4) = {PatternEntry::Note{NoteName::g_natural, 4},
+                                  1};
+    expected.channel(0).row(6) = {PatternEntry::Note{NoteName::c_natural, 5},
+                                  1};
+
+    auto text = R"(
+    C-4 01 .. .00
+    ... .. .. .00
+    E-4 01 .. .00
+    ... .. .. .00
+    G-4 01 .. .00
+    ... .. .. .00
+    C-5 01 .. .00
+    )";
+    ASSERT_TRUE(parse_pattern(text, result));
     EXPECT_EQ(result, expected);
 }

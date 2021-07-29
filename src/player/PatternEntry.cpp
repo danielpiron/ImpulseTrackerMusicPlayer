@@ -42,7 +42,7 @@ std::ostream& operator<<(std::ostream& os, const PatternEntry& pe)
     } else {
         auto width = os.width();
         auto fill = os.fill();
-        os << std::setfill('0') << std::setw(2) << pe._inst;
+        os << std::setfill('0') << std::setw(2) << static_cast<int>(pe._inst);
         os << std::setfill(fill) << std::setw(static_cast<int>(width));
     }
     os << " ";
@@ -54,7 +54,7 @@ std::ostream& operator<<(std::ostream& os, const PatternEntry& pe)
     if (pe._effect == PatternEntry::Command::none) {
         os << ".";
     } else {
-        os << static_cast<char>('A' + pe._effect._comm - 1);
+        os << static_cast<char>('A' + static_cast<int>(pe._effect._comm) - 1);
     }
 
     auto width = os.width();
@@ -158,14 +158,14 @@ parse_pattern_entry_effect(std::string::const_iterator& curr,
     return {comm, static_cast<uint8_t>(data)};
 }
 
-static void skip_whitespace(std::string::const_iterator& curr)
+void skip_whitespace(std::string::const_iterator& curr)
 {
     while (std::isspace(*curr))
         curr++;
 }
 
-static PatternEntry parse_pattern_entry(std::string::const_iterator& curr,
-                                        const std::string::const_iterator& last)
+PatternEntry parse_pattern_entry(std::string::const_iterator& curr,
+                                 const std::string::const_iterator& last)
 {
     skip_whitespace(curr);
     auto note = parse_pattern_entry_note(curr, last);

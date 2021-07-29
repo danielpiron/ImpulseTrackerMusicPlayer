@@ -59,7 +59,7 @@ struct PatternEntry {
         };
     };
 
-    enum Command { none, set_speed, set_volume };
+    enum class Command : uint8_t { none, set_speed, set_volume };
 
     struct Effect {
         Effect(Command comm = Command::none, int data = 0)
@@ -95,8 +95,13 @@ struct PatternEntry {
     Effect _effect;
 };
 
-std::ostream& operator<<(std::ostream& os, const PatternEntry::Note& note);
-std::ostream& operator<<(std::ostream& os, const PatternEntry& pe);
-PatternEntry parse_pattern_entry(const std::string& text);
+extern std::ostream& operator<<(std::ostream& os,
+                                const PatternEntry::Note& note);
+extern std::ostream& operator<<(std::ostream& os, const PatternEntry& pe);
+extern PatternEntry parse_pattern_entry(const std::string& text);
+extern PatternEntry
+parse_pattern_entry(std::string::const_iterator& curr,
+                    const std::string::const_iterator& last);
+extern void skip_whitespace(std::string::const_iterator& curr);
 
 #endif

@@ -9,17 +9,17 @@
 
 class Pattern {
   public:
-    using PatternEntry = PatternEntry;
+    using Entry = PatternEntry;
     class Channel {
       public:
         Channel(size_t row_count) : _rows(row_count) {}
-        PatternEntry& row(size_t r) { return _rows[r]; }
-        const std::vector<PatternEntry>& rows() const { return _rows; }
+        Entry& row(size_t r) { return _rows[r]; }
+        const std::vector<Entry>& rows() const { return _rows; }
 
         bool operator==(const Channel& rhs) const { return _rows == rhs._rows; }
 
       private:
-        std::vector<PatternEntry> _rows;
+        std::vector<Entry> _rows;
     };
 
   public:
@@ -36,12 +36,27 @@ class Pattern {
     std::vector<Channel> _channels;
 };
 
-bool parse_pattern(const std::string& text, Pattern& pattern)
+bool parse_pattern(std::string::const_iterator& start,
+                   const std::string::const_iterator& last, Pattern& pattern)
 {
-    if (!text.empty()) {
-        pattern.channel(0).row(0) = parse_pattern_entry(text);
+    size_t current_row = 0;
+    while (start != last && current_row < 8) {
+        std::cout << "Reading row " << current_row << "\n";
+        std::cout << "Text Remaining: " << std::string(start, last) << "\n";
+        pattern.channel(0).row(current_row++) =
+            parse_pattern_entry(start, last);
+        skip_whitespace(start);
     }
     return true;
+}
+
+bool parse_pattern(const std::string& text, Pattern& pattern)
+{
+    if (text.empty()) {
+        return true;
+    }
+    auto start = text.begin();
+    return parse_pattern(start, text.end(), pattern);
 }
 
 std::ostream& operator<<(std::ostream& os, const Pattern::Channel& channel)
