@@ -40,7 +40,7 @@ class Sample {
     inline float operator[](float i) const
     {
         auto wholeI = static_cast<size_t>(i);
-        float t = i - wholeI;
+        float t = i - static_cast<float>(wholeI);
         size_t nextIndex = wholeI + 1;
         if (nextIndex >= loopEnd()) {
             nextIndex -= loopLength();

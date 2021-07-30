@@ -1,6 +1,7 @@
 #include "PatternEntry.h"
 
 #include <cctype>
+#include <cstring>
 #include <iomanip>
 
 static const char* note_symbols[] = {
@@ -84,7 +85,7 @@ parse_pattern_entry_note(std::string::const_iterator& curr,
     }
     buffer[3] = '\0';
 
-    if (strncmp(buffer, "^^^", 3) == 0)
+    if (std::strncmp(buffer, "^^^", 3) == 0)
         return PatternEntry::Note(PatternEntry::Note::Type::note_cut);
 
     PatternEntry::Note note;
@@ -94,7 +95,7 @@ parse_pattern_entry_note(std::string::const_iterator& curr,
     }
     if (octave != -1) {
         for (int i = 0; i < 12; i++) {
-            if (strncmp(&buffer[0], note_symbols[i], 2) == 0) {
+            if (std::strncmp(&buffer[0], note_symbols[i], 2) == 0) {
                 return PatternEntry::Note(i, octave);
             }
         }

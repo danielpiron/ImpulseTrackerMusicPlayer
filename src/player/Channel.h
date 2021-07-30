@@ -3,6 +3,8 @@
 
 #include "Sample.h"
 
+#include <cstring>
+
 class Channel {
   public:
     bool is_active() const { return _is_active; }
@@ -26,22 +28,22 @@ class Channel {
                 const unsigned int targetSampleRate)
     {
 
-        float rate = _frequency / targetSampleRate;
+        float rate = _frequency / static_cast<float>(targetSampleRate);
         if (!is_active() || _sample == nullptr) {
-            memset(outputBuffer, 0, framesPerBuffer * sizeof outputBuffer[0]);
+            std::memset(outputBuffer, 0, framesPerBuffer * sizeof outputBuffer[0]);
             return;
         }
         while (framesPerBuffer--) {
-            if (_sampleIndex >= _sample->loopEnd()) {
+            if (static_cast<size_t>(_sampleIndex) >= _sample->loopEnd()) {
                 if (_sample->loopType() ==
                     Sample::LoopParams::Type::non_looping) {
                     // If we're done with this sample fill the rest with zeros
-                    memset(outputBuffer, 0,
+                    std::memset(outputBuffer, 0,
                            framesPerBuffer * sizeof(outputBuffer[0]));
                     // and leave.
                     break;
                 }
-                _sampleIndex -= _sample->loopLength();
+                _sampleIndex -= static_cast<float>(_sample->loopLength());
             }
             *outputBuffer++ = (*_sample)[_sampleIndex] * _volume;
             _sampleIndex += rate;
