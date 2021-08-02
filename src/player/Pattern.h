@@ -13,7 +13,10 @@ class Pattern {
     class Channel {
       public:
         Channel(size_t row_count) : _rows(row_count) {}
+
         Entry& row(size_t r) { return _rows[r]; }
+        const Entry& row(size_t r) const { return _rows[r]; }
+
         const std::vector<Entry>& rows() const { return _rows; }
 
         bool operator==(const Channel& rhs) const { return _rows == rhs._rows; }

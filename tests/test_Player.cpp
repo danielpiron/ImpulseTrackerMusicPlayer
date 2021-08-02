@@ -46,15 +46,35 @@ properties are.
 
 */
 
-TEST(PlayerGlobalEffects, CanInheritInitialSpeedFromModule)
-{
-    auto mod = std::make_shared<Module>();
+class PlayerGlobalEffects : public ::testing::Test {
+  protected:
+    void SetUp() override
+    {
+        mod = std::make_shared<Module>();
+        mod->initial_speed = 4;
+        mod->initial_tempo = 180;
+    }
+    void TearDown() override { mod = nullptr; }
+    std::shared_ptr<Module> mod;
+};
 
-    mod->initial_speed = 4;
-    mod->initial_tempo = 180;
+TEST_F(PlayerGlobalEffects, CanInheritInitialSpeedFromModule)
+{
+    Player player(mod);
+    EXPECT_EQ(player.speed, mod->initial_speed);
+    EXPECT_EQ(player.tempo, mod->initial_tempo);
+}
+
+TEST_F(PlayerGlobalEffects, CanHandleSetSpeedCommand)
+{
+    mod->patterns.resize(1, Pattern(8));
+    mod->patternOrder = {0, 255};
+
+    ASSERT_TRUE(parse_pattern("... .. .. A06", mod->patterns[0]));
 
     Player player(mod);
 
-    EXPECT_EQ(player.speed, mod->initial_speed);
-    EXPECT_EQ(player.tempo, mod->initial_tempo);
+    player.process_tick();
+
+    EXPECT_EQ(player.speed, 6);
 }
