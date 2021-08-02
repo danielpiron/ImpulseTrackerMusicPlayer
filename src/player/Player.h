@@ -16,6 +16,7 @@ struct Player {
     int speed;
     int tempo;
     size_t current_row;
+    size_t current_order;
 };
 
 #endif

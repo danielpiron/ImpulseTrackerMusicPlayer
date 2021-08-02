@@ -3,7 +3,8 @@
 
 Player::Player(const std::shared_ptr<Module>& mod)
     : module(std::const_pointer_cast<const Module>(mod)),
-      speed(mod->initial_speed), tempo(mod->initial_tempo), current_row(0)
+      speed(mod->initial_speed), tempo(mod->initial_tempo), current_row(0),
+      current_order(0)
 {
 }
 
@@ -23,6 +24,10 @@ void Player::process_tick()
     for (const auto& entry : next_row()) {
         if (entry._effect._comm == PatternEntry::Command::set_speed) {
             speed = entry._effect._data;
+        } else if (entry._effect._comm ==
+                   PatternEntry::Command::jump_to_order) {
+            current_order = entry._effect._data;
+            current_row = 0;
         }
     }
 }

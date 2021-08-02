@@ -58,6 +58,13 @@ class PlayerGlobalEffects : public ::testing::Test {
     std::shared_ptr<Module> mod;
 };
 
+void advance_player(Player& player, size_t tick_count = 1)
+{
+    for (size_t i = 0; i < tick_count; i++) {
+        player.process_tick();
+    }
+}
+
 TEST_F(PlayerGlobalEffects, CanInheritInitialSpeedFromModule)
 {
     Player player(mod);
@@ -79,4 +86,17 @@ TEST_F(PlayerGlobalEffects, CanHandleSetSpeedCommand)
     EXPECT_EQ(player.speed, mod->initial_speed);
     player.process_tick();
     EXPECT_EQ(player.speed, 6);
+}
+
+TEST_F(PlayerGlobalEffects, CanHandleJumpToOrderCommand)
+{
+    mod->patterns.resize(3, Pattern(8));
+    mod->patternOrder = {0, 1, 2, 255};
+
+    ASSERT_TRUE(parse_pattern(R"(... .. .. B02)", mod->patterns[0]));
+    Player player(mod);
+    player.process_tick();
+
+    EXPECT_EQ(player.current_order, 2);
+    EXPECT_EQ(player.current_row, 0);
 }
