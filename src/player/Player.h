@@ -15,6 +15,7 @@ struct Player {
     std::shared_ptr<const Module> module;
     int speed;
     int tempo;
+    size_t current_row;
 };
 
 #endif

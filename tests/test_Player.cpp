@@ -70,11 +70,13 @@ TEST_F(PlayerGlobalEffects, CanHandleSetSpeedCommand)
     mod->patterns.resize(1, Pattern(8));
     mod->patternOrder = {0, 255};
 
-    ASSERT_TRUE(parse_pattern("... .. .. A06", mod->patterns[0]));
-
+    ASSERT_TRUE(parse_pattern(R"(... .. .. .00
+                                 ... .. .. A06)",
+                              mod->patterns[0]));
     Player player(mod);
 
     player.process_tick();
-
+    EXPECT_EQ(player.speed, mod->initial_speed);
+    player.process_tick();
     EXPECT_EQ(player.speed, 6);
 }
