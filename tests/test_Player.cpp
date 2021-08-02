@@ -100,3 +100,16 @@ TEST_F(PlayerGlobalEffects, CanHandleJumpToOrderCommand)
     EXPECT_EQ(player.current_order, 2);
     EXPECT_EQ(player.current_row, 0);
 }
+
+TEST_F(PlayerGlobalEffects, CanHandleBreakToRowCommand)
+{
+    mod->patterns.resize(2, Pattern(8));
+    mod->patternOrder = {0, 1, 255};
+
+    ASSERT_TRUE(parse_pattern(R"(... .. .. C03)", mod->patterns[0]));
+    Player player(mod);
+    player.process_tick();
+
+    EXPECT_EQ(player.current_order, 1);
+    EXPECT_EQ(player.current_row, 3);
+}

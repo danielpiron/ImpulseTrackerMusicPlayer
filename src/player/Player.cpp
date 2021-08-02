@@ -28,6 +28,9 @@ void Player::process_tick()
                    PatternEntry::Command::jump_to_order) {
             current_order = entry._effect._data;
             current_row = 0;
+        } else if (entry._effect._comm == PatternEntry::Command::break_to_row) {
+            current_order++;
+            current_row = entry._effect._data;
         }
     }
 }

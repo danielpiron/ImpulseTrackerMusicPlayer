@@ -59,7 +59,13 @@ struct PatternEntry {
         };
     };
 
-    enum class Command : uint8_t { none, set_speed, jump_to_order, set_volume };
+    enum class Command : uint8_t {
+        none,
+        set_speed,
+        jump_to_order,
+        break_to_row,
+        set_volume
+    };
 
     struct Effect {
         Effect(Command comm = Command::none, int data = 0)

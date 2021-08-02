@@ -157,6 +157,9 @@ parse_pattern_entry_effect(std::string::const_iterator& curr,
     case 'B':
         comm = PatternEntry::Command::jump_to_order;
         break;
+    case 'C':
+        comm = PatternEntry::Command::break_to_row;
+        break;
     }
 
     return {comm, static_cast<uint8_t>(data)};
