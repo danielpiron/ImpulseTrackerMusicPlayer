@@ -5,8 +5,6 @@ bool parse_pattern(std::string::const_iterator& start,
 {
     size_t current_row = 0;
     while (start != last && current_row < 8) {
-        std::cout << "Reading row " << current_row << "\n";
-        std::cout << "Text Remaining: " << std::string(start, last) << "\n";
         pattern.channel(0).row(current_row++) =
             parse_pattern_entry(start, last);
         skip_whitespace(start);
