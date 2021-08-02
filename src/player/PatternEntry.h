@@ -64,22 +64,23 @@ struct PatternEntry {
         set_speed,
         jump_to_order,
         break_to_row,
+        set_tempo,
         set_volume
     };
 
     struct Effect {
         Effect(Command comm = Command::none, int data = 0)
-            : _comm(comm), _data(static_cast<uint8_t>(data))
+            : comm(comm), data(static_cast<uint8_t>(data))
         {
         }
 
         bool operator==(const Effect& rhs) const
         {
-            return _comm == rhs._comm && _data == rhs._data;
+            return comm == rhs.comm && data == rhs.data;
         }
 
-        Command _comm;
-        uint8_t _data;
+        Command comm;
+        uint8_t data;
     };
 
     PatternEntry(Note note = Note(), int inst = 0, Effect vol = Effect(),

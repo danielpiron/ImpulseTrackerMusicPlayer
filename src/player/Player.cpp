@@ -19,18 +19,31 @@ const std::vector<PatternEntry>& Player::next_row()
     return row;
 }
 
+void Player::process_global_command(const PatternEntry::Effect& effect)
+{
+    switch (effect.comm) {
+    case PatternEntry::Command::set_speed:
+        speed = effect.data;
+        break;
+    case PatternEntry::Command::jump_to_order:
+        current_order = effect.data;
+        current_row = 0;
+        break;
+    case PatternEntry::Command::break_to_row:
+        current_order++;
+        current_row = effect.data;
+        break;
+    case PatternEntry::Command::set_tempo:
+        tempo = effect.data;
+        break;
+    default:
+        break;
+    }
+}
+
 void Player::process_tick()
 {
     for (const auto& entry : next_row()) {
-        if (entry._effect._comm == PatternEntry::Command::set_speed) {
-            speed = entry._effect._data;
-        } else if (entry._effect._comm ==
-                   PatternEntry::Command::jump_to_order) {
-            current_order = entry._effect._data;
-            current_row = 0;
-        } else if (entry._effect._comm == PatternEntry::Command::break_to_row) {
-            current_order++;
-            current_row = entry._effect._data;
-        }
+        process_global_command(entry._effect);
     }
 }

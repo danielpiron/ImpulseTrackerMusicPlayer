@@ -52,7 +52,7 @@ class PlayerGlobalEffects : public ::testing::Test {
     {
         mod = std::make_shared<Module>();
         mod->initial_speed = 4;
-        mod->initial_tempo = 180;
+        mod->initial_tempo = 125;
     }
     void TearDown() override { mod = nullptr; }
     std::shared_ptr<Module> mod;
@@ -112,4 +112,16 @@ TEST_F(PlayerGlobalEffects, CanHandleBreakToRowCommand)
 
     EXPECT_EQ(player.current_order, 1);
     EXPECT_EQ(player.current_row, 3);
+}
+
+TEST_F(PlayerGlobalEffects, CanHandleSetTempoCommand)
+{
+    mod->patterns.resize(1, Pattern(8));
+    mod->patternOrder = {0, 255};
+
+    ASSERT_TRUE(parse_pattern(R"(... .. .. T80)", mod->patterns[0]));
+    Player player(mod);
+    player.process_tick();
+
+    EXPECT_EQ(player.tempo, 128);
 }

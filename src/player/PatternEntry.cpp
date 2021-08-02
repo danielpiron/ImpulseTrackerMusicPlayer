@@ -55,13 +55,13 @@ std::ostream& operator<<(std::ostream& os, const PatternEntry& pe)
     if (pe._effect == PatternEntry::Command::none) {
         os << ".";
     } else {
-        os << static_cast<char>('A' + static_cast<int>(pe._effect._comm) - 1);
+        os << static_cast<char>('A' + static_cast<int>(pe._effect.comm) - 1);
     }
 
     auto width = os.width();
     auto fill = os.fill();
     os << std::setfill('0') << std::setw(2) << std::hex
-       << static_cast<int>(pe._effect._data);
+       << static_cast<int>(pe._effect.data);
     os << std::setfill(fill) << std::setw(static_cast<int>(width)) << std::dec;
 
     return os;
@@ -159,6 +159,9 @@ parse_pattern_entry_effect(std::string::const_iterator& curr,
         break;
     case 'C':
         comm = PatternEntry::Command::break_to_row;
+        break;
+    case 'T':
+        comm = PatternEntry::Command::set_tempo;
         break;
     }
 
