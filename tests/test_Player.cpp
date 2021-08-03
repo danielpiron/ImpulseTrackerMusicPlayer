@@ -46,16 +46,24 @@ properties are.
 
 */
 
-class PlayerGlobalEffects : public ::testing::Test {
+class PlayerTest : public ::testing::Test {
   protected:
     void SetUp() override
     {
         mod = std::make_shared<Module>();
         mod->initial_speed = 4;
         mod->initial_tempo = 125;
+        mod->patterns.resize(1, Pattern(8));
+        mod->patternOrder = {0, 255};
     }
     void TearDown() override { mod = nullptr; }
     std::shared_ptr<Module> mod;
+};
+
+class PlayerGlobalEffects : public PlayerTest {
+};
+
+class PlayerChannelEvents : public PlayerTest {
 };
 
 void advance_player(Player& player, size_t tick_count = 1)
@@ -116,12 +124,49 @@ TEST_F(PlayerGlobalEffects, CanHandleBreakToRowCommand)
 
 TEST_F(PlayerGlobalEffects, CanHandleSetTempoCommand)
 {
-    mod->patterns.resize(1, Pattern(8));
-    mod->patternOrder = {0, 255};
-
     ASSERT_TRUE(parse_pattern(R"(... .. .. T80)", mod->patterns[0]));
     Player player(mod);
     player.process_tick();
 
     EXPECT_EQ(player.tempo, 128);
+}
+
+TEST_F(PlayerChannelEvents, CanEmitVolumeChangeEvents)
+{
+    ASSERT_TRUE(parse_pattern(R"(... .. 64 .00
+                                 ... .. 32 .00
+                                 ... .. 16 .00
+                                 ... .. 00 .00)",
+                              mod->patterns[0]));
+    Player player(mod);
+
+    Player::ChannelEvent full_volume = {0, Player::ChannelEvent::Type::volume,
+                                        1.0f};
+    Player::ChannelEvent half_volume = {0, Player::ChannelEvent::Type::volume,
+                                        0.5f};
+    Player::ChannelEvent quarter_volume = {
+        0, Player::ChannelEvent::Type::volume, 0.25f};
+    Player::ChannelEvent zero_volume = {0, Player::ChannelEvent::Type::volume,
+                                        0};
+
+    {
+        const auto& events = player.process_tick();
+        ASSERT_EQ(events.size(), 1);
+        EXPECT_EQ(events[0], full_volume);
+    }
+    {
+        const auto& events = player.process_tick();
+        ASSERT_EQ(events.size(), 1);
+        EXPECT_EQ(events[0], half_volume);
+    }
+    {
+        const auto& events = player.process_tick();
+        ASSERT_EQ(events.size(), 1);
+        EXPECT_EQ(events[0], quarter_volume);
+    }
+    {
+        const auto& events = player.process_tick();
+        ASSERT_EQ(events.size(), 1);
+        EXPECT_EQ(events[0], zero_volume);
+    }
 }

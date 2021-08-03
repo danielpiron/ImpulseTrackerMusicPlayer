@@ -89,10 +89,11 @@ TEST(ParsePatternsFromText, CanParseInstrument)
 
 TEST(ParsePatternsFromText, CanParseSetVolume)
 {
-    PatternEntry set_volume64(PatternEntry::Note{0, 5}, 0,
-                              {PatternEntry::Command::set_volume, 64});
+    PatternEntry set_volume64(
+        PatternEntry::Note(PatternEntry::Note::Type::empty), 0,
+        {PatternEntry::Command::set_volume, 64});
 
-    EXPECT_EQ(parse_pattern_entry("C-5 .. 64 .00"), set_volume64);
+    EXPECT_EQ(parse_pattern_entry("... .. 64 .00"), set_volume64);
 }
 
 TEST(ParsePatternsFromText, CanParseSetSpeed)

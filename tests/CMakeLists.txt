@@ -22,7 +22,7 @@ target_link_libraries(
   test_player
   gtest_main
 )
-target_compile_options(test_player PUBLIC ${CLANG_WARNINGS} -Werror)
+target_compile_options(test_player PUBLIC ${CLANG_WARNINGS} -Werror -g)
 
 include(GoogleTest)
 gtest_discover_tests(test_player)

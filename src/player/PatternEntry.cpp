@@ -49,7 +49,11 @@ std::ostream& operator<<(std::ostream& os, const PatternEntry& pe)
     os << " ";
 
     // Start Handle volume
-    os << "..";
+    if (pe._volume_effect.comm == PatternEntry::Command::set_volume) {
+        os << static_cast<int>(pe._volume_effect.data);
+    } else {
+        os << "..";
+    }
     os << " ";
     // End Handle
     if (pe._effect == PatternEntry::Command::none) {
