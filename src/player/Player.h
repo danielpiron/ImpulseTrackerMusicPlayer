@@ -13,6 +13,14 @@ struct Player {
     struct Channel {
 
         struct Event {
+            struct SetFrequency {
+                float frequency;
+                bool operator==(const SetFrequency& rhs) const
+                {
+                    return frequency == rhs.frequency;
+                }
+            };
+
             struct SetSample {
                 int sampleIndex;
                 bool operator==(const SetSample& rhs) const
@@ -28,13 +36,17 @@ struct Player {
                     return volume == rhs.volume;
                 }
             };
-            int channel;
-            std::variant<SetSample, SetVolume> action;
 
             bool operator==(const Event& rhs) const
             {
                 return channel == rhs.channel && action == rhs.action;
             }
+
+            using Action = std::variant<SetFrequency, SetSample, SetVolume>;
+
+          public:
+            int channel;
+            Action action;
         };
     };
 
@@ -51,5 +63,10 @@ struct Player {
     size_t current_row;
     size_t current_order;
 };
+
+extern std::ostream& operator<<(std::ostream& os,
+                                const Player::Channel::Event& event);
+extern std::ostream& operator<<(std::ostream& os,
+                                const Player::Channel::Event::Action& action);
 
 #endif

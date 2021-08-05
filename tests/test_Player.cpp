@@ -190,3 +190,46 @@ TEST_F(PlayerChannelEvents, CanEmitSampleChangeEvents)
         EXPECT_EQ(events[0], expected);
     }
 }
+
+TEST_F(PlayerChannelEvents, CanEmitFrequencyChangeEvents)
+{
+    ASSERT_TRUE(parse_pattern(R"(C-5 .. .. .00
+                                 E-5 .. .. .00
+                                 G-5 .. .. .00
+                                 C-6 .. .. .00)",
+                              mod->patterns[0]));
+
+    Player player(mod);
+    {
+        const Player::Channel::Event expected{
+            1, Player::Channel::Event::SetFrequency{8363.0f}};
+        const auto& events = player.process_tick();
+        ASSERT_EQ(events.size(), 1);
+        EXPECT_EQ(events[0], expected);
+        EXPECT_EQ(
+            std::get<Player::Channel::Event::SetFrequency>(events[0].action)
+                .frequency,
+            8363.0f);
+    }
+    {
+        const Player::Channel::Event expected{
+            1, Player::Channel::Event::SetFrequency{10558.0f}};
+        const auto& events = player.process_tick();
+        ASSERT_EQ(events.size(), 1);
+        EXPECT_EQ(events[0], expected);
+    }
+    {
+        const Player::Channel::Event expected{
+            1, Player::Channel::Event::SetFrequency{12559.0f}};
+        const auto& events = player.process_tick();
+        ASSERT_EQ(events.size(), 1);
+        EXPECT_EQ(events[0], expected);
+    }
+    {
+        const Player::Channel::Event expected{
+            1, Player::Channel::Event::SetFrequency{16726.0f}};
+        const auto& events = player.process_tick();
+        ASSERT_EQ(events.size(), 1);
+        EXPECT_EQ(events[0], expected);
+    }
+}
