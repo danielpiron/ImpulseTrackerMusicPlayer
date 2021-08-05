@@ -22,7 +22,7 @@ set(CLANG_WARNINGS
     -Wformat=2 # warn on security issues around functions that format output (ie printf)
 )
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 include(CTest)
