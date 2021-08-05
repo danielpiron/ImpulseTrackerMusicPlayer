@@ -139,34 +139,54 @@ TEST_F(PlayerChannelEvents, CanEmitVolumeChangeEvents)
                                  ... .. 00 .00)",
                               mod->patterns[0]));
     Player player(mod);
+    {
+        const Player::Channel::Event expected{
+            1, Player::Channel::Event::SetVolume{1.0f}};
+        const auto& events = player.process_tick();
+        ASSERT_EQ(events.size(), 1);
+        EXPECT_EQ(events[0], expected);
+    }
+    {
+        const Player::Channel::Event expected{
+            1, Player::Channel::Event::SetVolume{0.5f}};
+        const auto& events = player.process_tick();
+        ASSERT_EQ(events.size(), 1);
+        EXPECT_EQ(events[0], expected);
+    }
+    {
+        const Player::Channel::Event expected{
+            1, Player::Channel::Event::SetVolume{0.25f}};
+        const auto& events = player.process_tick();
+        ASSERT_EQ(events.size(), 1);
+        EXPECT_EQ(events[0], expected);
+    }
+    {
+        const Player::Channel::Event expected{
+            1, Player::Channel::Event::SetVolume{0}};
+        const auto& events = player.process_tick();
+        ASSERT_EQ(events.size(), 1);
+        EXPECT_EQ(events[0], expected);
+    }
+}
 
-    Player::ChannelEvent full_volume = {0, Player::ChannelEvent::Type::volume,
-                                        1.0f};
-    Player::ChannelEvent half_volume = {0, Player::ChannelEvent::Type::volume,
-                                        0.5f};
-    Player::ChannelEvent quarter_volume = {
-        0, Player::ChannelEvent::Type::volume, 0.25f};
-    Player::ChannelEvent zero_volume = {0, Player::ChannelEvent::Type::volume,
-                                        0};
-
+TEST_F(PlayerChannelEvents, CanEmitSampleChangeEvents)
+{
+    ASSERT_TRUE(parse_pattern(R"(... 01 .. .00
+                                 ... 12 .. .00)",
+                              mod->patterns[0]));
+    Player player(mod);
     {
+        const Player::Channel::Event expected{
+            1, Player::Channel::Event::SetSample{1}};
         const auto& events = player.process_tick();
         ASSERT_EQ(events.size(), 1);
-        EXPECT_EQ(events[0], full_volume);
+        EXPECT_EQ(events[0], expected);
     }
     {
+        const Player::Channel::Event expected{
+            1, Player::Channel::Event::SetSample{12}};
         const auto& events = player.process_tick();
         ASSERT_EQ(events.size(), 1);
-        EXPECT_EQ(events[0], half_volume);
-    }
-    {
-        const auto& events = player.process_tick();
-        ASSERT_EQ(events.size(), 1);
-        EXPECT_EQ(events[0], quarter_volume);
-    }
-    {
-        const auto& events = player.process_tick();
-        ASSERT_EQ(events.size(), 1);
-        EXPECT_EQ(events[0], zero_volume);
+        EXPECT_EQ(events[0], expected);
     }
 }

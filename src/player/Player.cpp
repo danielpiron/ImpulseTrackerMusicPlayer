@@ -41,16 +41,27 @@ void Player::process_global_command(const PatternEntry::Effect& effect)
     }
 }
 
-const std::vector<Player::ChannelEvent>& Player::process_tick()
+const std::vector<Player::Channel::Event>& Player::process_tick()
 {
-    static std::vector<Player::ChannelEvent> channelEvents;
+    static std::vector<Player::Channel::Event> channelEvents;
     channelEvents.clear();
 
     for (const auto& entry : next_row()) {
         process_global_command(entry._effect);
-        if (entry._volume_effect.comm == PatternEntry::Command::set_volume) {
-            channelEvents.push_back({0, Player::ChannelEvent::Type::volume,
-                                     entry._volume_effect.data / 64.0f});
+
+        if (entry._inst) {
+            channelEvents.push_back(Player::Channel::Event{
+                1, Player::Channel::Event::SetSample{entry._inst}});
+        }
+
+        switch (entry._volume_effect.comm) {
+        case PatternEntry::Command::set_volume:
+            channelEvents.push_back(Player::Channel::Event{
+                1, Player::Channel::Event::SetVolume{
+                       static_cast<float>(entry._volume_effect.data) / 64.0f}});
+            break;
+        default:
+            break;
         }
     }
     return channelEvents;
