@@ -22,7 +22,8 @@ target_link_libraries(
   test_player
   gtest_main
 )
-target_compile_options(test_player PUBLIC ${CLANG_WARNINGS} -Werror -g)
+target_compile_options(test_player PUBLIC ${CLANG_WARNINGS} -Werror -g -fsanitize=address)
+target_link_options(test_player PUBLIC -fsanitize=address)
 
 include(GoogleTest)
 gtest_discover_tests(test_player)
