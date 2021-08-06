@@ -13,6 +13,10 @@ struct Player {
     struct Channel {
 
         struct Event {
+            struct NoteOn {
+                bool operator==(const NoteOn&) const { return true; }
+            };
+
             struct SetFrequency {
                 float frequency;
                 bool operator==(const SetFrequency& rhs) const
@@ -42,12 +46,17 @@ struct Player {
                 return channel == rhs.channel && action == rhs.action;
             }
 
-            using Action = std::variant<SetFrequency, SetSample, SetVolume>;
+            using Action =
+                std::variant<NoteOn, SetFrequency, SetSample, SetVolume>;
 
           public:
             int channel;
             Action action;
         };
+
+      public:
+        PatternEntry::Note last_note;
+        PatternEntry::Inst last_inst;
     };
 
     Player(const std::shared_ptr<Module>& mod);
@@ -62,6 +71,7 @@ struct Player {
     int tempo;
     size_t current_row;
     size_t current_order;
+    std::vector<Channel> channels;
 };
 
 extern std::ostream& operator<<(std::ostream& os,

@@ -5,7 +5,7 @@
 
 std::ostream& operator<<(std::ostream& os, const Player::Channel::Event& event)
 {
-    os << "Channel" << event.channel << " receives " << event.action;
+    os << "Channel " << event.channel << " " << event.action;
     return os;
 }
 
@@ -14,18 +14,22 @@ std::ostream& operator<<(std::ostream& os,
 {
 
     struct ActionPrinter {
+        void operator()(const Player::Channel::Event::NoteOn&) const
+        {
+            os << "note on";
+        }
         void
         operator()(const Player::Channel::Event::SetFrequency& setFreq) const
         {
-            os << "set frequency to" << setFreq.frequency;
+            os << "set frequency to " << setFreq.frequency;
         }
         void operator()(const Player::Channel::Event::SetSample& setSamp) const
         {
-            os << "set sample to" << setSamp.sampleIndex;
+            os << "set sample to " << setSamp.sampleIndex;
         }
         void operator()(const Player::Channel::Event::SetVolume& setVol) const
         {
-            os << "set volume to" << setVol.volume;
+            os << "set volume to " << setVol.volume;
         }
         std::ostream& os;
     };
@@ -37,7 +41,7 @@ std::ostream& operator<<(std::ostream& os,
 Player::Player(const std::shared_ptr<Module>& mod)
     : module(std::const_pointer_cast<const Module>(mod)),
       speed(mod->initial_speed), tempo(mod->initial_tempo), current_row(0),
-      current_order(0)
+      current_order(0), channels(1)
 {
 }
 
@@ -82,22 +86,31 @@ const std::vector<Player::Channel::Event>& Player::process_tick()
     static std::vector<Player::Channel::Event> channelEvents;
     channelEvents.clear();
 
+    auto& channel = channels[0];
     for (const auto& entry : next_row()) {
         process_global_command(entry._effect);
 
         if (!entry._note.is_empty()) {
+            channel.last_note = entry._note;
+        }
+        if (entry._inst) {
+            channel.last_inst = entry._inst;
+        }
+
+        if (channel.last_note.is_playable() && channel.last_inst) {
             auto note_st3period =
-                ((8363 * 32 * note_periods[entry._note.index()]) >>
-                 entry._note.octave()) /
+                ((8363 * 32 * note_periods[channel.last_note.index()]) >>
+                 channel.last_note.octave()) /
                 8363;
             auto playback_frequency = 14317456 / note_st3period;
             channelEvents.push_back(Player::Channel::Event{
                 1, Player::Channel::Event::SetFrequency{
                        static_cast<float>(playback_frequency)}});
-        }
-        if (entry._inst) {
             channelEvents.push_back(Player::Channel::Event{
-                1, Player::Channel::Event::SetSample{entry._inst}});
+                1, Player::Channel::Event::SetSample{
+                       static_cast<PatternEntry::Inst>(channel.last_inst)}});
+            channelEvents.push_back(
+                Player::Channel::Event{1, Player::Channel::Event::NoteOn{}});
         }
 
         switch (entry._volume_effect.comm) {

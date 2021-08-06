@@ -169,67 +169,87 @@ TEST_F(PlayerChannelEvents, CanEmitVolumeChangeEvents)
     }
 }
 
-TEST_F(PlayerChannelEvents, CanEmitSampleChangeEvents)
+TEST_F(PlayerChannelEvents, CanEmitNotePlayingEvents)
 {
-    ASSERT_TRUE(parse_pattern(R"(... 01 .. .00
-                                 ... 12 .. .00)",
+    ASSERT_TRUE(parse_pattern(R"(C-5 01 .. .00
+                                 E-5 01 .. .00
+                                 G-5 01 .. .00
+                                 C-6 01 .. .00)",
                               mod->patterns[0]));
+
     Player player(mod);
     {
-        const Player::Channel::Event expected{
-            1, Player::Channel::Event::SetSample{1}};
+        const std::vector<Player::Channel::Event> expected{
+            Player::Channel::Event{
+                1, Player::Channel::Event::SetFrequency{8363.0f}},
+            Player::Channel::Event{1, Player::Channel::Event::SetSample{1}},
+            Player::Channel::Event{1, Player::Channel::Event::NoteOn{}},
+        };
         const auto& events = player.process_tick();
-        ASSERT_EQ(events.size(), 1);
-        EXPECT_EQ(events[0], expected);
+        EXPECT_EQ(events, expected);
     }
     {
-        const Player::Channel::Event expected{
-            1, Player::Channel::Event::SetSample{12}};
+        const std::vector<Player::Channel::Event> expected{
+            Player::Channel::Event{
+                1, Player::Channel::Event::SetFrequency{10558.0f}},
+            Player::Channel::Event{1, Player::Channel::Event::SetSample{1}},
+            Player::Channel::Event{1, Player::Channel::Event::NoteOn{}},
+        };
         const auto& events = player.process_tick();
-        ASSERT_EQ(events.size(), 1);
-        EXPECT_EQ(events[0], expected);
+        EXPECT_EQ(events, expected);
+    }
+    {
+        const std::vector<Player::Channel::Event> expected{
+            Player::Channel::Event{
+                1, Player::Channel::Event::SetFrequency{12559.0f}},
+            Player::Channel::Event{1, Player::Channel::Event::SetSample{1}},
+            Player::Channel::Event{1, Player::Channel::Event::NoteOn{}},
+        };
+        const auto& events = player.process_tick();
+        EXPECT_EQ(events, expected);
+    }
+    {
+        const std::vector<Player::Channel::Event> expected{
+            Player::Channel::Event{
+                1, Player::Channel::Event::SetFrequency{16726.0f}},
+            Player::Channel::Event{1, Player::Channel::Event::SetSample{1}},
+            Player::Channel::Event{1, Player::Channel::Event::NoteOn{}},
+        };
+        const auto& events = player.process_tick();
+        EXPECT_EQ(events, expected);
     }
 }
 
-TEST_F(PlayerChannelEvents, CanEmitFrequencyChangeEvents)
+TEST_F(PlayerChannelEvents, CanTriggerIncompleteNotes)
 {
     ASSERT_TRUE(parse_pattern(R"(C-5 .. .. .00
-                                 E-5 .. .. .00
-                                 G-5 .. .. .00
+                                 ... 01 .. .00
                                  C-6 .. .. .00)",
                               mod->patterns[0]));
-
     Player player(mod);
     {
-        const Player::Channel::Event expected{
-            1, Player::Channel::Event::SetFrequency{8363.0f}};
         const auto& events = player.process_tick();
-        ASSERT_EQ(events.size(), 1);
-        EXPECT_EQ(events[0], expected);
-        EXPECT_EQ(
-            std::get<Player::Channel::Event::SetFrequency>(events[0].action)
-                .frequency,
-            8363.0f);
+        const std::vector<Player::Channel::Event> expected{};
+        EXPECT_EQ(events, expected);
     }
     {
-        const Player::Channel::Event expected{
-            1, Player::Channel::Event::SetFrequency{10558.0f}};
         const auto& events = player.process_tick();
-        ASSERT_EQ(events.size(), 1);
-        EXPECT_EQ(events[0], expected);
+        const std::vector<Player::Channel::Event> expected{
+            Player::Channel::Event{
+                1, Player::Channel::Event::SetFrequency{8363.0f}},
+            Player::Channel::Event{1, Player::Channel::Event::SetSample{1}},
+            Player::Channel::Event{1, Player::Channel::Event::NoteOn{}},
+        };
+        EXPECT_EQ(events, expected);
     }
     {
-        const Player::Channel::Event expected{
-            1, Player::Channel::Event::SetFrequency{12559.0f}};
         const auto& events = player.process_tick();
-        ASSERT_EQ(events.size(), 1);
-        EXPECT_EQ(events[0], expected);
-    }
-    {
-        const Player::Channel::Event expected{
-            1, Player::Channel::Event::SetFrequency{16726.0f}};
-        const auto& events = player.process_tick();
-        ASSERT_EQ(events.size(), 1);
-        EXPECT_EQ(events[0], expected);
+        const std::vector<Player::Channel::Event> expected{
+            Player::Channel::Event{
+                1, Player::Channel::Event::SetFrequency{16726.0f}},
+            Player::Channel::Event{1, Player::Channel::Event::SetSample{1}},
+            Player::Channel::Event{1, Player::Channel::Event::NoteOn{}},
+        };
+        EXPECT_EQ(events, expected);
     }
 }

@@ -49,6 +49,11 @@ struct PatternEntry {
         bool is_empty() const { return _type == Type::empty; }
         bool is_note_cut() const { return _type == Type::note_cut; }
         bool is_note_off() const { return _type == Type::note_off; }
+        bool is_playable() const
+        {
+            return _value >= Note{Name::c_natural, 0}._value &&
+                   _value <= Note{Name::b_natural, 9}._value;
+        }
 
         operator int() const { return _value; }
 
