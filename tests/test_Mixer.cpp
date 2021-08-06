@@ -35,6 +35,9 @@ TEST(Mixer, CanRenderSingleChannel)
 {
     // Demonstrate channel rendering with tick handler
     struct VolumeTweaker : public Mixer::TickHandler {
+
+        VolumeTweaker() : one({1.0f}, 1), volume(1.0f) {}
+
         void onAttachment(Mixer& audio) override
         {
             audio.channel(0).set_frequency(1.0f);
@@ -47,8 +50,8 @@ TEST(Mixer, CanRenderSingleChannel)
             volume /= 2;
         }
 
-        Sample one = {1.0f};
-        float volume = 1;
+        Sample one;
+        float volume;
     };
 
     std::vector<float> expected{1.0f,  1.0f,  0.5f,   0.5,
@@ -72,8 +75,8 @@ TEST(Mixer, CanMixChannels)
     // Sampling rate of 1hz and 2 channels
     Mixer ag(1, 2);
 
-    Sample s1{1.0f, 0};
-    Sample s2{0, 0.5f};
+    Sample s1({1.0f, 0}, 1);
+    Sample s2({0, 0.5f}, 1);
     ag.channel(0).play(&s1);
     ag.channel(1).play(&s2);
 

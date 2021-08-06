@@ -25,15 +25,20 @@ class Sample {
 
   public:
     template <typename Iterator>
-    Sample(Iterator b, Iterator e, size_t loopBegin_ = 0, size_t loopEnd_ = 0)
-        : _data(b, e), _loop{LoopParams::Type::forward_looping, loopBegin_,
-                             loopEnd_ ? loopEnd_ : _data.size()}
+    Sample(Iterator b, Iterator e, size_t playbackRate,
+           LoopParams loopParams = LoopParams())
+        : _data(b, e),
+          _playbackRate(playbackRate), _loop{loopParams.type, loopParams.begin,
+                                             loopParams.end ? loopParams.end
+                                                            : _data.size()}
     {
     }
-    Sample(std::initializer_list<float> il,
+    Sample(std::initializer_list<float> il, size_t playbackRate,
            LoopParams loopParams = LoopParams())
-        : _data(il), _loop{loopParams.type, loopParams.begin,
-                           loopParams.end ? loopParams.end : _data.size()}
+        : _data(il),
+          _playbackRate(playbackRate), _loop{loopParams.type, loopParams.begin,
+                                             loopParams.end ? loopParams.end
+                                                            : _data.size()}
     {
     }
 
@@ -55,9 +60,11 @@ class Sample {
     inline size_t loopBegin() const { return _loop.begin; }
     inline size_t loopEnd() const { return _loop.end; }
     inline size_t loopLength() const { return loopEnd() - loopBegin(); }
+    inline size_t playbackRate() const { return _playbackRate; }
 
   private:
     std::vector<float> _data;
+    size_t _playbackRate;
     LoopParams _loop;
 };
 

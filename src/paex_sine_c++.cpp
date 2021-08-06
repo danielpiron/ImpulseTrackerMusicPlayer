@@ -51,10 +51,11 @@ int main()
         {
             std::vector<float> sampleData(400);
             for (size_t i = 0; i < sampleData.size(); ++i) {
-                sampleData[i] =
-                    static_cast<float>(sin(M_PI * 2.0 * static_cast<double>(i) / static_cast<double>(sampleData.size())));
+                sampleData[i] = static_cast<float>(
+                    sin(M_PI * 2.0 * static_cast<double>(i) /
+                        static_cast<double>(sampleData.size())));
             }
-            return Sample(sampleData.begin(), sampleData.end());
+            return Sample(sampleData.begin(), sampleData.end(), 1);
         }
 
         ScalePlayer(std::initializer_list<float> l)
@@ -70,8 +71,9 @@ int main()
 
         void onTick(Mixer& audio) override
         {
-            audio.channel(0).set_frequency(static_cast<float>(sineWave.length()) *
-                                           notes[index++ % notes.size()]);
+            audio.channel(0).set_frequency(
+                static_cast<float>(sineWave.length()) *
+                notes[index++ % notes.size()]);
         }
 
         Sample sineWave;

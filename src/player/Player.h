@@ -56,7 +56,7 @@ struct Player {
 
       public:
         PatternEntry::Note last_note;
-        PatternEntry::Inst last_inst;
+        PatternEntry::Inst last_inst = 0;
     };
 
     Player(const std::shared_ptr<Module>& mod);

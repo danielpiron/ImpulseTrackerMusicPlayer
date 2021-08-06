@@ -2,6 +2,7 @@
 
 #include <player/Module.h>
 #include <player/Player.h>
+#include <player/Sample.h>
 
 #include <memory>
 
@@ -55,6 +56,8 @@ class PlayerTest : public ::testing::Test {
         mod->initial_tempo = 125;
         mod->patterns.resize(1, Pattern(8));
         mod->patternOrder = {0, 255};
+        mod->samples = {Sample{{0.5f, 1.0f, 0.5f, 1.0f}, 8363},
+                        Sample{{0.5f, 1.0f, 0.5f, 1.0f}, 8363 * 2}};
     }
     void TearDown() override { mod = nullptr; }
     std::shared_ptr<Module> mod;
@@ -248,6 +251,35 @@ TEST_F(PlayerChannelEvents, CanTriggerIncompleteNotes)
             Player::Channel::Event{
                 0, Player::Channel::Event::SetFrequency{16726.0f}},
             Player::Channel::Event{0, Player::Channel::Event::SetSample{1}},
+            Player::Channel::Event{0, Player::Channel::Event::NoteOn{}},
+        };
+        EXPECT_EQ(events, expected);
+    }
+}
+
+TEST_F(PlayerChannelEvents, SampleFrequencyAffectsSetFrequency)
+{
+    ASSERT_TRUE(parse_pattern(R"(C-5 01 .. .00
+                                 C-5 02 .. .00)",
+                              mod->patterns[0]));
+
+    Player player(mod);
+    {
+        const auto& events = player.process_tick();
+        const std::vector<Player::Channel::Event> expected{
+            Player::Channel::Event{
+                0, Player::Channel::Event::SetFrequency{8363.0f}},
+            Player::Channel::Event{0, Player::Channel::Event::SetSample{1}},
+            Player::Channel::Event{0, Player::Channel::Event::NoteOn{}},
+        };
+        EXPECT_EQ(events, expected);
+    }
+    {
+        const auto& events = player.process_tick();
+        const std::vector<Player::Channel::Event> expected{
+            Player::Channel::Event{
+                0, Player::Channel::Event::SetFrequency{16726.0f}},
+            Player::Channel::Event{0, Player::Channel::Event::SetSample{2}},
             Player::Channel::Event{0, Player::Channel::Event::NoteOn{}},
         };
         EXPECT_EQ(events, expected);

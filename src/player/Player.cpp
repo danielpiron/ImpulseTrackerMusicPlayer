@@ -87,10 +87,10 @@ const std::vector<Player::Channel::Event>& Player::process_tick()
     channelEvents.clear();
 
     for (const auto& entry : next_row()) {
-        int channel_index = 0;
-        auto& channel = channels[static_cast<size_t>(channel_index)];
         process_global_command(entry._effect);
 
+        int channel_index = 0;
+        auto& channel = channels[static_cast<size_t>(channel_index)];
         if (!entry._note.is_empty()) {
             channel.last_note = entry._note;
         }
@@ -102,7 +102,8 @@ const std::vector<Player::Channel::Event>& Player::process_tick()
             auto note_st3period =
                 ((8363 * 32 * note_periods[channel.last_note.index()]) >>
                  channel.last_note.octave()) /
-                8363;
+                static_cast<int>(
+                    module->samples[channel.last_inst - 1].playbackRate());
             auto playback_frequency = 14317456 / note_st3period;
             channelEvents.push_back(Player::Channel::Event{
                 channel_index, Player::Channel::Event::SetFrequency{

@@ -20,7 +20,7 @@ TEST(Channel, CanHandleSingleSampleSample)
     std::vector<float> expected{1.0f, 1.0f, 1.0f, 1.0f};
     std::vector<float> buffer(expected.size());
 
-    Sample sample({1.0f});
+    Sample sample({1.0f}, 1);
     Channel c;
     c.play(&sample);
     c.set_frequency(1.0);
@@ -37,7 +37,7 @@ TEST(Channel, CanSpecifyFrequency)
         0.25, 0.375, 0.5,  0.625f // Render 3 - Frequency x0.5 (with lerping)
     };
     std::vector<float> buffer(expected.size(), 0);
-    Sample sample(expected.begin(), expected.begin() + 5);
+    Sample sample(expected.begin(), expected.begin() + 5, 1);
 
     Channel c;
     c.play(&sample);
@@ -58,7 +58,7 @@ TEST(Channel, CanSpecifySampleRateOnRender)
 {
     std::vector<float> expected{0.0f, 0.25f, 0.5f, 0.75f, 1.0f};
     std::vector<float> buffer(expected.size(), 0);
-    Sample sample{0, 1.0f};
+    Sample sample({0, 1.0f}, 1);
 
     Channel c;
     c.play(&sample);
@@ -76,7 +76,7 @@ TEST(Channel, CanSetVolume)
     std::vector<float> expected{0, 0.5f, 1.0f, 0, 0.25f, 0.5f, 0, .125, .25f};
     std::vector<float> buffer(expected.size(), 0);
 
-    Sample sample{0, 0.5f, 1.0f, 0, 0.5f, 1.0f, 0, 0.5f, 1.0f};
+    Sample sample({0, 0.5f, 1.0f, 0, 0.5f, 1.0f, 0, 0.5f, 1.0f}, 1);
 
     Channel c;
     c.play(&sample);
@@ -99,7 +99,7 @@ TEST(Channel, CanRenderNonLoopingSample)
     std::vector<float> buffer(expected.size(), 0);
 
     // Given that the sample is only two frames long
-    Sample sample({-1.0f, 1.0f}, {Sample::LoopParams::Type::non_looping});
+    Sample sample({-1.0f, 1.0f}, 1, {Sample::LoopParams::Type::non_looping});
     Channel c;
 
     c.play(&sample);
@@ -115,7 +115,7 @@ TEST(Channel, CanBeStopped)
     std::vector<float> expected{-1.0f, 1.0f, 0, 0};
     std::vector<float> buffer(expected.size(), 0);
 
-    Sample sample({-1.0f, 1.0f});
+    Sample sample({-1.0f, 1.0f}, 1);
     Channel c;
 
     c.play(&sample);
