@@ -86,8 +86,9 @@ const std::vector<Player::Channel::Event>& Player::process_tick()
     static std::vector<Player::Channel::Event> channelEvents;
     channelEvents.clear();
 
-    auto& channel = channels[0];
     for (const auto& entry : next_row()) {
+        int channel_index = 0;
+        auto& channel = channels[static_cast<size_t>(channel_index)];
         process_global_command(entry._effect);
 
         if (!entry._note.is_empty()) {
@@ -104,20 +105,22 @@ const std::vector<Player::Channel::Event>& Player::process_tick()
                 8363;
             auto playback_frequency = 14317456 / note_st3period;
             channelEvents.push_back(Player::Channel::Event{
-                1, Player::Channel::Event::SetFrequency{
-                       static_cast<float>(playback_frequency)}});
+                channel_index, Player::Channel::Event::SetFrequency{
+                                   static_cast<float>(playback_frequency)}});
             channelEvents.push_back(Player::Channel::Event{
-                1, Player::Channel::Event::SetSample{
-                       static_cast<PatternEntry::Inst>(channel.last_inst)}});
-            channelEvents.push_back(
-                Player::Channel::Event{1, Player::Channel::Event::NoteOn{}});
+                channel_index,
+                Player::Channel::Event::SetSample{
+                    static_cast<PatternEntry::Inst>(channel.last_inst)}});
+            channelEvents.push_back(Player::Channel::Event{
+                channel_index, Player::Channel::Event::NoteOn{}});
         }
 
         switch (entry._volume_effect.comm) {
         case PatternEntry::Command::set_volume:
             channelEvents.push_back(Player::Channel::Event{
-                1, Player::Channel::Event::SetVolume{
-                       static_cast<float>(entry._volume_effect.data) / 64.0f}});
+                channel_index,
+                Player::Channel::Event::SetVolume{
+                    static_cast<float>(entry._volume_effect.data) / 64.0f}});
             break;
         default:
             break;

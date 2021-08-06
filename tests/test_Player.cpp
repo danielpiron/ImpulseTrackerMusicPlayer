@@ -141,28 +141,28 @@ TEST_F(PlayerChannelEvents, CanEmitVolumeChangeEvents)
     Player player(mod);
     {
         const Player::Channel::Event expected{
-            1, Player::Channel::Event::SetVolume{1.0f}};
+            0, Player::Channel::Event::SetVolume{1.0f}};
         const auto& events = player.process_tick();
         ASSERT_EQ(events.size(), 1);
         EXPECT_EQ(events[0], expected);
     }
     {
         const Player::Channel::Event expected{
-            1, Player::Channel::Event::SetVolume{0.5f}};
+            0, Player::Channel::Event::SetVolume{0.5f}};
         const auto& events = player.process_tick();
         ASSERT_EQ(events.size(), 1);
         EXPECT_EQ(events[0], expected);
     }
     {
         const Player::Channel::Event expected{
-            1, Player::Channel::Event::SetVolume{0.25f}};
+            0, Player::Channel::Event::SetVolume{0.25f}};
         const auto& events = player.process_tick();
         ASSERT_EQ(events.size(), 1);
         EXPECT_EQ(events[0], expected);
     }
     {
         const Player::Channel::Event expected{
-            1, Player::Channel::Event::SetVolume{0}};
+            0, Player::Channel::Event::SetVolume{0}};
         const auto& events = player.process_tick();
         ASSERT_EQ(events.size(), 1);
         EXPECT_EQ(events[0], expected);
@@ -181,9 +181,9 @@ TEST_F(PlayerChannelEvents, CanEmitNotePlayingEvents)
     {
         const std::vector<Player::Channel::Event> expected{
             Player::Channel::Event{
-                1, Player::Channel::Event::SetFrequency{8363.0f}},
-            Player::Channel::Event{1, Player::Channel::Event::SetSample{1}},
-            Player::Channel::Event{1, Player::Channel::Event::NoteOn{}},
+                0, Player::Channel::Event::SetFrequency{8363.0f}},
+            Player::Channel::Event{0, Player::Channel::Event::SetSample{1}},
+            Player::Channel::Event{0, Player::Channel::Event::NoteOn{}},
         };
         const auto& events = player.process_tick();
         EXPECT_EQ(events, expected);
@@ -191,9 +191,9 @@ TEST_F(PlayerChannelEvents, CanEmitNotePlayingEvents)
     {
         const std::vector<Player::Channel::Event> expected{
             Player::Channel::Event{
-                1, Player::Channel::Event::SetFrequency{10558.0f}},
-            Player::Channel::Event{1, Player::Channel::Event::SetSample{1}},
-            Player::Channel::Event{1, Player::Channel::Event::NoteOn{}},
+                0, Player::Channel::Event::SetFrequency{10558.0f}},
+            Player::Channel::Event{0, Player::Channel::Event::SetSample{1}},
+            Player::Channel::Event{0, Player::Channel::Event::NoteOn{}},
         };
         const auto& events = player.process_tick();
         EXPECT_EQ(events, expected);
@@ -201,9 +201,9 @@ TEST_F(PlayerChannelEvents, CanEmitNotePlayingEvents)
     {
         const std::vector<Player::Channel::Event> expected{
             Player::Channel::Event{
-                1, Player::Channel::Event::SetFrequency{12559.0f}},
-            Player::Channel::Event{1, Player::Channel::Event::SetSample{1}},
-            Player::Channel::Event{1, Player::Channel::Event::NoteOn{}},
+                0, Player::Channel::Event::SetFrequency{12559.0f}},
+            Player::Channel::Event{0, Player::Channel::Event::SetSample{1}},
+            Player::Channel::Event{0, Player::Channel::Event::NoteOn{}},
         };
         const auto& events = player.process_tick();
         EXPECT_EQ(events, expected);
@@ -211,9 +211,9 @@ TEST_F(PlayerChannelEvents, CanEmitNotePlayingEvents)
     {
         const std::vector<Player::Channel::Event> expected{
             Player::Channel::Event{
-                1, Player::Channel::Event::SetFrequency{16726.0f}},
-            Player::Channel::Event{1, Player::Channel::Event::SetSample{1}},
-            Player::Channel::Event{1, Player::Channel::Event::NoteOn{}},
+                0, Player::Channel::Event::SetFrequency{16726.0f}},
+            Player::Channel::Event{0, Player::Channel::Event::SetSample{1}},
+            Player::Channel::Event{0, Player::Channel::Event::NoteOn{}},
         };
         const auto& events = player.process_tick();
         EXPECT_EQ(events, expected);
@@ -236,9 +236,9 @@ TEST_F(PlayerChannelEvents, CanTriggerIncompleteNotes)
         const auto& events = player.process_tick();
         const std::vector<Player::Channel::Event> expected{
             Player::Channel::Event{
-                1, Player::Channel::Event::SetFrequency{8363.0f}},
-            Player::Channel::Event{1, Player::Channel::Event::SetSample{1}},
-            Player::Channel::Event{1, Player::Channel::Event::NoteOn{}},
+                0, Player::Channel::Event::SetFrequency{8363.0f}},
+            Player::Channel::Event{0, Player::Channel::Event::SetSample{1}},
+            Player::Channel::Event{0, Player::Channel::Event::NoteOn{}},
         };
         EXPECT_EQ(events, expected);
     }
@@ -246,9 +246,9 @@ TEST_F(PlayerChannelEvents, CanTriggerIncompleteNotes)
         const auto& events = player.process_tick();
         const std::vector<Player::Channel::Event> expected{
             Player::Channel::Event{
-                1, Player::Channel::Event::SetFrequency{16726.0f}},
-            Player::Channel::Event{1, Player::Channel::Event::SetSample{1}},
-            Player::Channel::Event{1, Player::Channel::Event::NoteOn{}},
+                0, Player::Channel::Event::SetFrequency{16726.0f}},
+            Player::Channel::Event{0, Player::Channel::Event::SetSample{1}},
+            Player::Channel::Event{0, Player::Channel::Event::NoteOn{}},
         };
         EXPECT_EQ(events, expected);
     }
