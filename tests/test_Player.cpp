@@ -69,6 +69,9 @@ class PlayerGlobalEffects : public PlayerTest {
 class PlayerChannelEvents : public PlayerTest {
 };
 
+class PlayerBehavior : public PlayerTest {
+};
+
 void advance_player(Player& player, size_t tick_count = 1)
 {
     for (size_t i = 0; i < tick_count; i++) {
@@ -284,4 +287,23 @@ TEST_F(PlayerChannelEvents, SampleFrequencyAffectsSetFrequency)
         };
         EXPECT_EQ(events, expected);
     }
+}
+
+TEST_F(PlayerBehavior, PlayerLoopsAfterLastPattern)
+{
+    const auto row_count = 8;
+    mod->patterns.resize(2, Pattern(row_count));
+    mod->patternOrder = {0, 1, 255};
+
+    Player player(mod);
+    advance_player(player, row_count);
+    // Advance passed the end of the first pattern
+    EXPECT_EQ(player.current_row, 0);
+    EXPECT_EQ(player.current_order, 1);
+
+    advance_player(player, row_count);
+    // Since there are only two pattenrs in the order,
+    // repeating this process loops us back to the beginning
+    EXPECT_EQ(player.current_row, 0);
+    EXPECT_EQ(player.current_order, 0);
 }

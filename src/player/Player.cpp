@@ -49,10 +49,21 @@ const std::vector<PatternEntry>& Player::next_row()
 {
     static std::vector<PatternEntry> row;
 
-    row.clear();
-    row.push_back(module->patterns[0].channel(0).row(current_row));
+    const auto& current_pattern =
+        module->patterns[module->patternOrder[current_order]];
 
-    current_row++;
+    row.clear();
+    row.push_back(current_pattern.channel(0).row(current_row));
+
+    if (++current_row == current_pattern.row_count()) {
+        current_order++;
+        // TODO: End of order value 255 needs a name
+        if (module->patternOrder[current_order] == 255) {
+            current_order = 0;
+        }
+        current_row = 0;
+    }
+
     return row;
 }
 

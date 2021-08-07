@@ -32,7 +32,7 @@ file(GLOB PLAYER_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/src/player/*.cpp)
 add_subdirectory(tests)
 add_subdirectory(deps/portaudio)
 
-add_executable(player ${PLAYER_SOURCE} src/paex_sine_c++.cpp)
+add_executable(player ${PLAYER_SOURCE} src/player.cpp)
 target_compile_options(player PUBLIC ${CLANG_WARNINGS} -Werror -fsanitize=address)
 target_link_options(player PUBLIC -fsanitize=address)
 target_link_libraries(player PUBLIC portaudio)

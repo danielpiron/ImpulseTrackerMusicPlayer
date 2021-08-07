@@ -26,7 +26,10 @@ class Pattern {
     };
 
   public:
-    Pattern(size_t row_count) : _channels(1, Channel(row_count)) {}
+    Pattern(size_t row_count)
+        : _channels(1, Channel(row_count)), _row_count(row_count)
+    {
+    }
     bool operator==(const Pattern& rhs) const
     {
         return _channels == rhs._channels;
@@ -34,9 +37,11 @@ class Pattern {
 
     Channel& channel(size_t c) { return _channels[c]; }
     const Channel& channel(size_t c) const { return _channels[c]; }
+    size_t row_count() const { return _row_count; }
 
   private:
     std::vector<Channel> _channels;
+    size_t _row_count;
 };
 
 extern bool parse_pattern(std::string::const_iterator& start,
