@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 
+#include <player/Mixer.h>
 #include <player/Module.h>
 #include <player/Player.h>
 #include <player/Sample.h>
@@ -306,4 +307,21 @@ TEST_F(PlayerBehavior, PlayerLoopsAfterLastPattern)
     // repeating this process loops us back to the beginning
     EXPECT_EQ(player.current_row, 0);
     EXPECT_EQ(player.current_order, 0);
+}
+
+TEST_F(PlayerBehavior, PlayerRendersAudio)
+{
+    ASSERT_TRUE(parse_pattern(R"(C-5 01 .. .00)", mod->patterns[0]));
+
+    // Mixer probably needs to be injected anyway
+    auto unique_mixer = std::make_unique<Mixer>();
+    // We need to interogate the mixer later. This pointer is only
+    // valid for as long as the player is alive.
+    Player player(mod);
+
+    float buffer;
+    player.render_audio(&buffer, 1);
+
+    const auto& mixer = player.mixer();
+    EXPECT_EQ(mixer.channel(0).frequency(), 8363.0f);
 }

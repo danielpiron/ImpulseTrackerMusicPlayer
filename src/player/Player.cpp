@@ -1,4 +1,5 @@
 #include "Player.h"
+#include "Mixer.h"
 #include "Module.h"
 
 #include <iostream>
@@ -41,8 +42,44 @@ std::ostream& operator<<(std::ostream& os,
 Player::Player(const std::shared_ptr<Module>& mod)
     : module(std::const_pointer_cast<const Module>(mod)),
       speed(mod->initial_speed), tempo(mod->initial_tempo), current_row(0),
-      current_order(0), channels(1)
+      current_order(0), channels(1), _mixer(16)
+
 {
+    _mixer.attach_handler(this);
+}
+
+void Player::onAttachment(Mixer&) {}
+
+void Player::onTick(Mixer& audio)
+{
+
+    struct EventActionInterpretter {
+        EventActionInterpretter(const Player& player, Mixer& mixer,
+                                size_t channel)
+            : player(player), mmixer(mixer), channel(channel)
+        {
+        }
+
+        void operator()(const Player::Channel::Event::NoteOn&)
+        {
+            //    mixer.channel(channel).play();
+        }
+        void operator()(const Player::Channel::Event::SetFrequency& setFreq)
+        {
+            mmixer.channel(channel).set_frequency(setFreq.frequency);
+        }
+        void operator()(const Player::Channel::Event::SetSample&) {}
+        void operator()(const Player::Channel::Event::SetVolume&) {}
+        const Player& player;
+        Mixer& mmixer;
+        size_t channel;
+    };
+
+    EventActionInterpretter ea{*this, audio, 0};
+    for (const auto& event : process_tick()) {
+        ea.channel = static_cast<size_t>(event.channel);
+        std::visit(ea, event.action);
+    }
 }
 
 const std::vector<PatternEntry>& Player::next_row()
@@ -65,6 +102,11 @@ const std::vector<PatternEntry>& Player::next_row()
     }
 
     return row;
+}
+
+void Player::render_audio(float* buffer, int framesToRender)
+{
+    _mixer.render(buffer, static_cast<size_t>(framesToRender));
 }
 
 void Player::process_global_command(const PatternEntry::Effect& effect)

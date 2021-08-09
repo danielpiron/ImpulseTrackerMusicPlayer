@@ -30,7 +30,8 @@ class Channel {
 
         float rate = _frequency / static_cast<float>(targetSampleRate);
         if (!is_active() || _sample == nullptr) {
-            std::memset(outputBuffer, 0, framesPerBuffer * sizeof outputBuffer[0]);
+            std::memset(outputBuffer, 0,
+                        framesPerBuffer * sizeof outputBuffer[0]);
             return;
         }
         while (framesPerBuffer--) {
@@ -39,7 +40,7 @@ class Channel {
                     Sample::LoopParams::Type::non_looping) {
                     // If we're done with this sample fill the rest with zeros
                     std::memset(outputBuffer, 0,
-                           framesPerBuffer * sizeof(outputBuffer[0]));
+                                framesPerBuffer * sizeof(outputBuffer[0]));
                     // and leave.
                     break;
                 }
@@ -49,6 +50,8 @@ class Channel {
             _sampleIndex += rate;
         }
     }
+
+    float frequency() const { return _frequency; }
 
   private:
     const Sample* _sample = nullptr;

@@ -55,6 +55,7 @@ class Mixer {
     }
 
     Channel& channel(size_t c) { return _channels[c]; }
+    const Channel& channel(size_t c) const { return _channels[c]; }
 
     void set_samples_per_tick(size_t spt) { _samples_per_tick = spt; }
 
