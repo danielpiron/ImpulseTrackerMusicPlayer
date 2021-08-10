@@ -18,7 +18,12 @@ void Player::onAttachment(Mixer& audio)
         static_cast<size_t>(2.5f * audio.sampling_rate() / tempo));
 }
 
-void Player::onTick(Mixer&) { process_tick(); }
+void Player::onTick(Mixer& audio)
+{
+    for (const auto& event : process_tick()) {
+        audio.process_event(event);
+    }
+}
 
 const std::vector<PatternEntry>& Player::next_row()
 {
@@ -69,13 +74,14 @@ void Player::process_global_command(const PatternEntry::Effect& effect)
     }
 }
 
-static const int note_periods[] = {1712, 1616, 1524, 1440, 1356, 1280,
-                                   1208, 1140, 1076, 1016, 960,  907};
-
-void Player::process_tick()
+const std::vector<Mixer::Event>& Player::process_tick()
 {
+    static const int note_periods[] = {1712, 1616, 1524, 1440, 1356, 1280,
+                                       1208, 1140, 1076, 1016, 960,  907};
+
+    mixer_events.clear();
     if (--tick_counter > 0) {
-        return;
+        return mixer_events;
     }
 
     tick_counter = speed;
@@ -104,21 +110,23 @@ void Player::process_tick()
                     module->samples[channel.last_inst - 1].playbackRate());
             auto playback_frequency = 14317456 / note_st3period;
 
-            _mixer.channel(static_cast<size_t>(channel_index))
-                .set_frequency(static_cast<float>(playback_frequency));
-
-            _mixer.channel(static_cast<size_t>(channel_index))
-                .play(&(module->samples[channel.last_inst - 1]));
+            mixer_events.push_back(
+                {static_cast<size_t>(channel_index),
+                 ::Channel::Event::SetNoteOn{
+                     static_cast<float>(playback_frequency),
+                     &(module->samples[channel.last_inst - 1])}});
         }
 
         switch (entry._volume_effect.comm) {
         case PatternEntry::Command::set_volume:
-            _mixer.channel(static_cast<size_t>(channel_index))
-                .set_volume(static_cast<float>(entry._volume_effect.data) /
-                            64.0f);
+            mixer_events.push_back(
+                {static_cast<size_t>(channel_index),
+                 ::Channel::Event::SetVolume{
+                     static_cast<float>(entry._volume_effect.data) / 64.0f}});
             break;
         default:
             break;
         }
     }
+    return mixer_events;
 }

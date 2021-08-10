@@ -28,7 +28,7 @@ struct Player : public Mixer::TickHandler {
     void render_audio(float*, int);
     void process_global_command(const PatternEntry::Effect& effect);
 
-    void process_tick();
+    const std::vector<Mixer::Event>& process_tick();
 
     const Mixer& mixer() const { return _mixer; }
 
@@ -39,6 +39,7 @@ struct Player : public Mixer::TickHandler {
     size_t current_row;
     size_t current_order;
     std::vector<Channel> channels;
+    std::vector<Mixer::Event> mixer_events;
 
   private:
     Mixer _mixer;

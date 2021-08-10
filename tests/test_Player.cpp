@@ -106,22 +106,32 @@ TEST_F(PlayerNoteInterpretation, CanEmitVolumeChangeEvents)
                               mod->patterns[0]));
 
     Player player(mod);
-    const auto& channel = player.mixer().channel(0);
-
-    player.process_tick();
-    EXPECT_EQ(channel.volume(), 0);
-
-    player.process_tick();
-    EXPECT_EQ(channel.volume(), .25f);
-
-    player.process_tick();
-    EXPECT_EQ(channel.volume(), .5f);
-
-    player.process_tick();
-    EXPECT_EQ(channel.volume(), 1.0f);
+    {
+        const auto& events = player.process_tick();
+        std::vector<Mixer::Event> expected{{0, Channel::Event::SetVolume{0}}};
+        EXPECT_EQ(events, expected);
+    }
+    {
+        const auto& events = player.process_tick();
+        std::vector<Mixer::Event> expected{
+            {0, Channel::Event::SetVolume{0.25f}}};
+        EXPECT_EQ(events, expected);
+    }
+    {
+        const auto& events = player.process_tick();
+        std::vector<Mixer::Event> expected{
+            {0, Channel::Event::SetVolume{0.50f}}};
+        EXPECT_EQ(events, expected);
+    }
+    {
+        const auto& events = player.process_tick();
+        std::vector<Mixer::Event> expected{
+            {0, Channel::Event::SetVolume{1.0f}}};
+        EXPECT_EQ(events, expected);
+    }
 }
 
-TEST_F(PlayerNoteInterpretation, CanEmitNotePlayingEvents)
+TEST_F(PlayerNoteInterpretation, CanEmitSetNoteOnEvents)
 {
     ASSERT_TRUE(parse_pattern(R"(C-5 01 .. .00
                                  E-5 01 .. .00
@@ -130,56 +140,62 @@ TEST_F(PlayerNoteInterpretation, CanEmitNotePlayingEvents)
                               mod->patterns[0]));
 
     Player player(mod);
-    const auto& channel = player.mixer().channel(0);
-
-    player.process_tick();
-    EXPECT_EQ(channel.frequency(), 8363.0f);
-    EXPECT_EQ(channel.sample(), &mod->samples[0]);
-    EXPECT_EQ(channel.sample_index(), 0);
-    EXPECT_TRUE(channel.is_active());
-
-    player.process_tick();
-    EXPECT_EQ(channel.frequency(), 10558.0f);
-    EXPECT_EQ(channel.sample(), &mod->samples[0]);
-    EXPECT_EQ(channel.sample_index(), 0);
-    EXPECT_TRUE(channel.is_active());
-
-    player.process_tick();
-    EXPECT_EQ(channel.frequency(), 12559.0f);
-    EXPECT_EQ(channel.sample(), &mod->samples[0]);
-    EXPECT_EQ(channel.sample_index(), 0);
-    EXPECT_TRUE(channel.is_active());
-
-    player.process_tick();
-    EXPECT_EQ(channel.frequency(), 16726.0f);
-    EXPECT_EQ(channel.sample(), &mod->samples[0]);
-    EXPECT_EQ(channel.sample_index(), 0);
-    EXPECT_TRUE(channel.is_active());
+    {
+        const auto& events = player.process_tick();
+        std::vector<Mixer::Event> expected{
+            {0, Channel::Event::SetNoteOn{8363.0, &mod->samples[0]}}};
+        EXPECT_EQ(events, expected);
+    }
+    {
+        const auto& events = player.process_tick();
+        std::vector<Mixer::Event> expected{
+            {0, Channel::Event::SetNoteOn{10558.0f, &mod->samples[0]}}};
+        EXPECT_EQ(events, expected);
+    }
+    {
+        const auto& events = player.process_tick();
+        std::vector<Mixer::Event> expected{
+            {0, Channel::Event::SetNoteOn{12559.0f, &mod->samples[0]}}};
+        EXPECT_EQ(events, expected);
+    }
+    {
+        const auto& events = player.process_tick();
+        std::vector<Mixer::Event> expected{
+            {0, Channel::Event::SetNoteOn{16726.0f, &mod->samples[0]}}};
+        EXPECT_EQ(events, expected);
+    }
 }
 
 TEST_F(PlayerNoteInterpretation, CanTriggerIncompleteNotes)
 {
     ASSERT_TRUE(parse_pattern(R"(C-5 .. .. .00
                                  ... 01 .. .00
+                                 ... .. .. .00
                                  C-6 .. .. .00)",
                               mod->patterns[0]));
     Player player(mod);
-    const auto& channel = player.mixer().channel(0);
-
-    player.process_tick();
-    EXPECT_FALSE(channel.is_active());
-
-    player.process_tick();
-    EXPECT_EQ(channel.frequency(), 8363.0f);
-    EXPECT_EQ(channel.sample(), &mod->samples[0]);
-    EXPECT_EQ(channel.sample_index(), 0);
-    EXPECT_TRUE(channel.is_active());
-
-    player.process_tick();
-    EXPECT_EQ(channel.frequency(), 16726.0f);
-    EXPECT_EQ(channel.sample(), &mod->samples[0]);
-    EXPECT_EQ(channel.sample_index(), 0);
-    EXPECT_TRUE(channel.is_active());
+    {
+        const auto& events = player.process_tick();
+        std::vector<Mixer::Event> expected{};
+        EXPECT_EQ(events, expected);
+    }
+    {
+        const auto& events = player.process_tick();
+        std::vector<Mixer::Event> expected{
+            {0, Channel::Event::SetNoteOn{8363.0f, &mod->samples[0]}}};
+        EXPECT_EQ(events, expected);
+    }
+    {
+        const auto& events = player.process_tick();
+        std::vector<Mixer::Event> expected{};
+        EXPECT_EQ(events, expected);
+    }
+    {
+        const auto& events = player.process_tick();
+        std::vector<Mixer::Event> expected{
+            {0, Channel::Event::SetNoteOn{16726.0f, &mod->samples[0]}}};
+        EXPECT_EQ(events, expected);
+    }
 }
 
 TEST_F(PlayerNoteInterpretation, SampleFrequencyAffectsSetFrequency)
@@ -189,19 +205,18 @@ TEST_F(PlayerNoteInterpretation, SampleFrequencyAffectsSetFrequency)
                               mod->patterns[0]));
 
     Player player(mod);
-    const auto& channel = player.mixer().channel(0);
-
-    player.process_tick();
-    EXPECT_EQ(channel.frequency(), 8363.0f);
-    EXPECT_EQ(channel.sample(), &mod->samples[0]);
-    EXPECT_EQ(channel.sample_index(), 0);
-    EXPECT_TRUE(channel.is_active());
-
-    player.process_tick();
-    EXPECT_EQ(channel.frequency(), 16726.0f);
-    EXPECT_EQ(channel.sample(), &mod->samples[1]);
-    EXPECT_EQ(channel.sample_index(), 0);
-    EXPECT_TRUE(channel.is_active());
+    {
+        const auto& events = player.process_tick();
+        std::vector<Mixer::Event> expected{
+            {0, Channel::Event::SetNoteOn{8363.0f, &mod->samples[0]}}};
+        EXPECT_EQ(events, expected);
+    }
+    {
+        const auto& events = player.process_tick();
+        std::vector<Mixer::Event> expected{
+            {0, Channel::Event::SetNoteOn{16726.0f, &mod->samples[1]}}};
+        EXPECT_EQ(events, expected);
+    }
 }
 
 TEST_F(PlayerBehavior, PlayerLoopsAfterLastPattern)
@@ -246,21 +261,22 @@ TEST_F(PlayerBehavior, PlayerSpeedHasSignificance)
     mod->initial_speed = 4;
 
     Player player(mod);
-    const auto& channel = player.mixer().channel(0);
 
-    player.process_tick();
-    EXPECT_FALSE(channel.is_active());
-    EXPECT_EQ(channel.volume(), 0.5f);
-
-    player.process_tick();
-    ASSERT_FALSE(channel.is_active());
-
-    player.process_tick();
-    ASSERT_FALSE(channel.is_active());
-
-    player.process_tick();
-    ASSERT_FALSE(channel.is_active());
-
-    player.process_tick();
-    EXPECT_TRUE(channel.is_active());
+    {
+        const auto& events = player.process_tick();
+        std::vector<Mixer::Event> expected{
+            {0, Channel::Event::SetVolume{0.50f}}};
+        EXPECT_EQ(events, expected);
+    }
+    for (int i = 0; i < 3; ++i) {
+        const auto& events = player.process_tick();
+        std::vector<Mixer::Event> expected{};
+        EXPECT_EQ(events, expected);
+    }
+    {
+        const auto& events = player.process_tick();
+        std::vector<Mixer::Event> expected{
+            {0, Channel::Event::SetNoteOn{8363.0, &mod->samples[0]}}};
+        EXPECT_EQ(events, expected);
+    }
 }

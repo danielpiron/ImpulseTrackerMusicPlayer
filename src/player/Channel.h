@@ -11,13 +11,25 @@ class Channel {
     struct Event {
         struct SetFrequency {
             float frequency;
+            bool operator==(const SetFrequency& rhs) const
+            {
+                return frequency == rhs.frequency;
+            }
         };
         struct SetNoteOn {
             float frequency;
-            Sample* sample;
+            const Sample* sample;
+            bool operator==(const SetNoteOn& rhs) const
+            {
+                return sample == rhs.sample && frequency == rhs.frequency;
+            }
         };
         struct SetVolume {
             float volume;
+            bool operator==(const SetVolume& rhs) const
+            {
+                return volume == rhs.volume;
+            }
         };
         using Action = std::variant<SetFrequency, SetNoteOn, SetVolume>;
     };

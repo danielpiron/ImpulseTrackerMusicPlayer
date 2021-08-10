@@ -12,6 +12,10 @@ class Mixer {
     struct Event {
         size_t channel;
         Channel::Event::Action action;
+        bool operator==(const Event& rhs) const
+        {
+            return channel == rhs.channel && action == rhs.action;
+        }
     };
 
     struct TickHandler {
