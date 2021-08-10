@@ -52,6 +52,9 @@ class Channel {
     }
 
     float frequency() const { return _frequency; }
+    const Sample* sample() const { return _sample; }
+    float sample_index() const { return _sampleIndex; }
+    float volume() const { return _volume; }
 
   private:
     const Sample* _sample = nullptr;
