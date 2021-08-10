@@ -102,3 +102,19 @@ TEST(Mixer, CanMixChannels)
     mixer.render(&buffer[0], 4);
     EXPECT_EQ(buffer, expected);
 }
+
+TEST(Mixer, CanProcessMixerEvent)
+{
+    // Sampling rate of 1hz sampling rate and 2 channels
+    Mixer mixer(1, 2);
+    Sample sample({1.0f}, 1);
+
+    Mixer::Event event1{0, Channel::Event::SetNoteOn{8363.0f, &sample}};
+    Mixer::Event event2{1, Channel::Event::SetVolume{0.5f}};
+
+    mixer.process_event(event1);
+    mixer.process_event(event2);
+
+    EXPECT_EQ(mixer.channel(0).frequency(), 8363.0f);
+    EXPECT_EQ(mixer.channel(0).sample(), &sample);
+}

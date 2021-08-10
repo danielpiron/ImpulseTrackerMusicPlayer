@@ -9,6 +9,11 @@
 class Mixer {
 
   public:
+    struct Event {
+        size_t channel;
+        Channel::Event::Action action;
+    };
+
     struct TickHandler {
         virtual void onAttachment(Mixer& audio) = 0;
         virtual void onTick(Mixer& audio) = 0;
@@ -19,6 +24,11 @@ class Mixer {
         : _sample_rate(sample_rate_), _auxilliary_buffer(1024),
           _channels(channel_count)
     {
+    }
+
+    void process_event(const Event& event)
+    {
+        channel(event.channel).process_event(event.action);
     }
 
     void attach_handler(TickHandler* handler)
