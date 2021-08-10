@@ -125,3 +125,36 @@ TEST(Channel, CanBeStopped)
 
     EXPECT_EQ(buffer, expected);
 }
+
+TEST(ChannelEventsInterpretation, CanSetFrequency)
+{
+    Channel channel;
+
+    Channel::Event::Action action{Channel::Event::SetFrequency{8363.0f}};
+    channel.process_event(action);
+
+    EXPECT_EQ(channel.frequency(), 8363.0f);
+}
+
+TEST(ChannelEventsInterpretation, CanSetVolume)
+{
+    Channel channel;
+
+    Channel::Event::Action action{Channel::Event::SetVolume{0.5f}};
+    channel.process_event(action);
+
+    EXPECT_EQ(channel.volume(), 0.5f);
+}
+
+TEST(ChannelEventsInterpretation, CanSetNoteOn)
+{
+    Channel channel;
+    Sample sample({1.0f}, 1);
+
+    Channel::Event::Action action{Channel::Event::SetNoteOn{8363.0f, &sample}};
+    channel.process_event(action);
+
+    EXPECT_EQ(channel.frequency(), 8363.0f);
+    EXPECT_EQ(channel.sample(), &sample);
+    EXPECT_TRUE(channel.is_active());
+}

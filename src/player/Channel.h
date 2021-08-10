@@ -4,9 +4,46 @@
 #include "Sample.h"
 
 #include <cstring>
+#include <variant>
 
 class Channel {
   public:
+    struct Event {
+        struct SetFrequency {
+            float frequency;
+        };
+        struct SetNoteOn {
+            float frequency;
+            Sample* sample;
+        };
+        struct SetVolume {
+            float volume;
+        };
+        using Action = std::variant<SetFrequency, SetNoteOn, SetVolume>;
+    };
+
+  public:
+    void process_event(const Event::Action& action)
+    {
+        struct ActionInterpreter {
+            void operator()(const Event::SetFrequency& set_freq)
+            {
+                c.set_frequency(set_freq.frequency);
+            }
+            void operator()(const Event::SetNoteOn& note_on)
+            {
+                c.set_frequency(note_on.frequency);
+                c.play(note_on.sample);
+            }
+            void operator()(const Event::SetVolume& set_vol)
+            {
+                c.set_volume(set_vol.volume);
+            }
+            Channel& c;
+        };
+        std::visit(ActionInterpreter{*this}, action);
+    }
+
     bool is_active() const { return _is_active; }
 
     void play(const Sample* sample)
