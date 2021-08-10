@@ -26,7 +26,7 @@ class PlayerTest : public ::testing::Test {
 class PlayerGlobalEffects : public PlayerTest {
 };
 
-class PlayerChannelEvents : public PlayerTest {
+class PlayerNoteInterpretation : public PlayerTest {
 };
 
 class PlayerBehavior : public PlayerTest {
@@ -97,7 +97,7 @@ TEST_F(PlayerGlobalEffects, CanHandleSetTempoCommand)
     EXPECT_EQ(player.tempo, 128);
 }
 
-TEST_F(PlayerChannelEvents, CanEmitVolumeChangeEvents)
+TEST_F(PlayerNoteInterpretation, CanEmitVolumeChangeEvents)
 {
     ASSERT_TRUE(parse_pattern(R"(... .. 00 .00
                                  ... .. 16 .00
@@ -121,7 +121,7 @@ TEST_F(PlayerChannelEvents, CanEmitVolumeChangeEvents)
     EXPECT_EQ(channel.volume(), 1.0f);
 }
 
-TEST_F(PlayerChannelEvents, CanEmitNotePlayingEvents)
+TEST_F(PlayerNoteInterpretation, CanEmitNotePlayingEvents)
 {
     ASSERT_TRUE(parse_pattern(R"(C-5 01 .. .00
                                  E-5 01 .. .00
@@ -157,7 +157,7 @@ TEST_F(PlayerChannelEvents, CanEmitNotePlayingEvents)
     EXPECT_TRUE(channel.is_active());
 }
 
-TEST_F(PlayerChannelEvents, CanTriggerIncompleteNotes)
+TEST_F(PlayerNoteInterpretation, CanTriggerIncompleteNotes)
 {
     ASSERT_TRUE(parse_pattern(R"(C-5 .. .. .00
                                  ... 01 .. .00
@@ -182,7 +182,7 @@ TEST_F(PlayerChannelEvents, CanTriggerIncompleteNotes)
     EXPECT_TRUE(channel.is_active());
 }
 
-TEST_F(PlayerChannelEvents, SampleFrequencyAffectsSetFrequency)
+TEST_F(PlayerNoteInterpretation, SampleFrequencyAffectsSetFrequency)
 {
     ASSERT_TRUE(parse_pattern(R"(C-5 01 .. .00
                                  C-5 02 .. .00)",
