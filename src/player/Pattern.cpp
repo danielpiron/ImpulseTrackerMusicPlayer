@@ -4,7 +4,7 @@ bool parse_pattern(std::string::const_iterator& start,
                    const std::string::const_iterator& last, Pattern& pattern)
 {
     size_t current_row = 0;
-    while (start != last && current_row < 8) {
+    while (start != last && current_row < pattern.row_count()) {
         pattern.channel(0).row(current_row++) =
             parse_pattern_entry(start, last);
         skip_whitespace(start);

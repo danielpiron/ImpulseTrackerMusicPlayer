@@ -84,14 +84,19 @@ void Player::process_tick()
 
         int channel_index = 0;
         auto& channel = channels[static_cast<size_t>(channel_index)];
+
+        bool candidate_note = false;
         if (!entry._note.is_empty()) {
             channel.last_note = entry._note;
+            candidate_note = true;
         }
         if (entry._inst) {
             channel.last_inst = entry._inst;
+            candidate_note = true;
         }
 
-        if (channel.last_note.is_playable() && channel.last_inst) {
+        if (candidate_note && channel.last_note.is_playable() &&
+            channel.last_inst) {
             auto note_st3period =
                 ((8363 * 32 * note_periods[channel.last_note.index()]) >>
                  channel.last_note.octave()) /

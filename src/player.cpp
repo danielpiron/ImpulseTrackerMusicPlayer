@@ -65,18 +65,22 @@ int main()
     mod->initial_tempo = 60;
     mod->initial_speed = 6;
     mod->patternOrder = {0, 255};
-    mod->patterns.resize(1, Module::Pattern(8));
+    mod->patterns.resize(6, Module::Pattern(16));
     mod->samples = {generateSinewave(22050)};
 
     parse_pattern(R"(
-        C-5 01 .. .00
-        D-5 01 .. .00
-        E-5 01 .. .00
+        C-6 01 .. .00
+        ... .. .. .00
         F-5 01 .. .00
         G-5 01 .. .00
         A-5 01 .. .00
-        B-5 01 .. .00
+        A#5 01 .. .00
         C-6 01 .. .00
+        ... .. .. .00
+        F-5 01 .. .00
+        ... .. .. .00
+        F-5 01 .. .00
+        ... .. .. .00
         )",
                   mod->patterns[0]);
 
