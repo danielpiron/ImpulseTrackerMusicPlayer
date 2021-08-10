@@ -92,13 +92,13 @@ TEST(Mixer, CanMixChannels)
     std::vector<float> buffer(expected.size());
 
     // Sampling rate of 1hz and 2 channels
-    Mixer ag(1, 2);
+    Mixer mixer(1, 2);
 
     Sample s1({1.0f, 0}, 1);
     Sample s2({0, 0.5f}, 1);
-    ag.channel(0).play(&s1);
-    ag.channel(1).play(&s2);
+    mixer.channel(0).play(&s1);
+    mixer.channel(1).play(&s2);
 
-    ag.render(&buffer[0], 4);
+    mixer.render(&buffer[0], 4);
     EXPECT_EQ(buffer, expected);
 }
