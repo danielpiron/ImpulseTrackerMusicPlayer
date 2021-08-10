@@ -53,7 +53,7 @@ class PlayerTest : public ::testing::Test {
     void SetUp() override
     {
         mod = std::make_shared<Module>();
-        mod->initial_speed = 4;
+        mod->initial_speed = 1;
         mod->initial_tempo = 125;
         mod->patterns.resize(1, Pattern(8));
         mod->patternOrder = {0, 255};
@@ -275,4 +275,33 @@ TEST_F(PlayerBehavior, PlayerRendersAudio)
 
     const auto& mixer = player.mixer();
     EXPECT_EQ(mixer.channel(0).frequency(), 8363.0f);
+}
+
+TEST_F(PlayerBehavior, PlayerSpeedHasSignificance)
+{
+    ASSERT_TRUE(parse_pattern(R"(
+        ... .. 32 .00
+        C-5 01 .. .00
+    )",
+                              mod->patterns[0]));
+    mod->initial_speed = 4;
+
+    Player player(mod);
+    const auto& channel = player.mixer().channel(0);
+
+    player.process_tick();
+    EXPECT_FALSE(channel.is_active());
+    EXPECT_EQ(channel.volume(), 0.5f);
+
+    player.process_tick();
+    ASSERT_FALSE(channel.is_active());
+
+    player.process_tick();
+    ASSERT_FALSE(channel.is_active());
+
+    player.process_tick();
+    ASSERT_FALSE(channel.is_active());
+
+    player.process_tick();
+    EXPECT_TRUE(channel.is_active());
 }

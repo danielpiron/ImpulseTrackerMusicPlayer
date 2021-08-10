@@ -1,6 +1,7 @@
 #include <portaudio.h>
 
-#include <player/Mixer.h>
+#include <player/Module.h>
+#include <player/Player.h>
 
 #include <cmath>
 #include <iostream>
@@ -11,9 +12,9 @@ static int patestCallback(const void*, void* outputBuffer,
                           const PaStreamCallbackTimeInfo*,
                           PaStreamCallbackFlags, void* userData)
 {
-    auto mixer = reinterpret_cast<Mixer*>(userData);
+    auto player = reinterpret_cast<Player*>(userData);
     auto pOut = reinterpret_cast<float*>(outputBuffer);
-    mixer->render(pOut, framesPerBuffer);
+    player->render_audio(pOut, static_cast<int>(framesPerBuffer));
 
     return paContinue;
 }
@@ -22,6 +23,21 @@ static void StreamFinished(void* userData)
 {
     (void)userData;
     std::cout << "Stream complete" << std::endl;
+}
+
+static Sample generateSinewave(int sampling_rate,
+                               float target_frequency = 523.25f)
+{
+    std::vector<float> sampleData(
+        static_cast<size_t>(static_cast<float>(sampling_rate) /
+                            static_cast<float>(target_frequency)));
+    for (size_t i = 0; i < sampleData.size(); ++i) {
+        sampleData[i] =
+            static_cast<float>(sin(M_PI * 2.0 * static_cast<double>(i) /
+                                   static_cast<double>(sampleData.size())));
+    }
+    return Sample(sampleData.begin(), sampleData.end(),
+                  static_cast<size_t>(sampling_rate));
 }
 
 int main()
@@ -45,64 +61,31 @@ int main()
         Pa_GetDeviceInfo(outputParameters.device)->defaultLowOutputLatency;
     outputParameters.hostApiSpecificStreamInfo = NULL;
 
-    struct ScalePlayer : public Mixer::TickHandler {
+    auto mod = std::make_shared<Module>();
+    mod->initial_tempo = 60;
+    mod->initial_speed = 6;
+    mod->patternOrder = {0, 255};
+    mod->patterns.resize(1, Module::Pattern(8));
+    mod->samples = {generateSinewave(22050)};
 
-        static Sample generateSinewave()
-        {
-            std::vector<float> sampleData(400);
-            for (size_t i = 0; i < sampleData.size(); ++i) {
-                sampleData[i] = static_cast<float>(
-                    sin(M_PI * 2.0 * static_cast<double>(i) /
-                        static_cast<double>(sampleData.size())));
-            }
-            return Sample(sampleData.begin(), sampleData.end(), 1);
-        }
+    parse_pattern(R"(
+        C-5 01 .. .00
+        D-5 01 .. .00
+        E-5 01 .. .00
+        F-5 01 .. .00
+        G-5 01 .. .00
+        A-5 01 .. .00
+        B-5 01 .. .00
+        C-6 01 .. .00
+        )",
+                  mod->patterns[0]);
 
-        ScalePlayer(std::initializer_list<float> l)
-            : sineWave(generateSinewave()), notes(l), index(0)
-        {
-        }
-
-        void onAttachment(Mixer& audio) override
-        {
-            audio.set_samples_per_tick(static_cast<size_t>(44100 * 0.5f));
-            audio.channel(0).play(&sineWave);
-        }
-
-        void onTick(Mixer& audio) override
-        {
-            audio.channel(0).set_frequency(
-                static_cast<float>(sineWave.length()) *
-                notes[index++ % notes.size()]);
-        }
-
-        Sample sineWave;
-        std::vector<float> notes;
-        size_t index;
-    };
-
-    Mixer mixer(44100, 1);
-    ScalePlayer player{
-        523.25f, // C5
-                 //         554.37f,  // C#5
-        587.33f, // D5
-                 //         622.25f,  // D#5
-        659.25f, // E5
-        698.46f, // F5
-                 //         739.99f,  // F#5
-        783.99f, // G5
-                 //         830.61f,  // G#5
-        880.00f, // A5
-                 //         932.33f,  // A#5
-        987.77f, // B5
-        1046.50f // C6
-    };
-    mixer.attach_handler(&player);
+    Player player(mod);
 
     PaStream* stream = nullptr;
     err = Pa_OpenStream(&stream, NULL, &outputParameters, 44100,
                         paFramesPerBufferUnspecified, paClipOff, patestCallback,
-                        reinterpret_cast<void*>(&mixer));
+                        reinterpret_cast<void*>(&player));
     if (err != paNoError) {
         std::cerr << "Error opening stream" << std::endl;
         return 1;

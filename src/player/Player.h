@@ -35,6 +35,7 @@ struct Player : public Mixer::TickHandler {
     std::shared_ptr<const Module> module;
     int speed;
     int tempo;
+    int tick_counter;
     size_t current_row;
     size_t current_order;
     std::vector<Channel> channels;

@@ -6,14 +6,17 @@
 
 Player::Player(const std::shared_ptr<Module>& mod)
     : module(std::const_pointer_cast<const Module>(mod)),
-      speed(mod->initial_speed), tempo(mod->initial_tempo), current_row(0),
-      current_order(0), channels(1), _mixer(16)
-
+      speed(mod->initial_speed), tempo(mod->initial_tempo), tick_counter(1),
+      current_row(0), current_order(0), channels(1), _mixer(44100, 16)
 {
     _mixer.attach_handler(this);
 }
 
-void Player::onAttachment(Mixer&) {}
+void Player::onAttachment(Mixer& audio)
+{
+    audio.set_samples_per_tick(
+        static_cast<size_t>(2.5f * audio.sampling_rate() / tempo));
+}
 
 void Player::onTick(Mixer&) { process_tick(); }
 
@@ -71,6 +74,11 @@ static const int note_periods[] = {1712, 1616, 1524, 1440, 1356, 1280,
 
 void Player::process_tick()
 {
+    if (--tick_counter > 0) {
+        return;
+    }
+
+    tick_counter = speed;
     for (const auto& entry : next_row()) {
         process_global_command(entry._effect);
 

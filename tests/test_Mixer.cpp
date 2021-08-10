@@ -31,6 +31,25 @@ TEST(Mixer, CanAcceptOnTickHandler)
     EXPECT_EQ(t.ticks_processed, 3UL);
 }
 
+TEST(Mixer, CanSetTicksPerSecond)
+{
+    struct TestHandler : public Mixer::TickHandler {
+        void onAttachment(Mixer& audio) override
+        {
+            audio.set_samples_per_tick(3);
+        }
+        void onTick(Mixer& audio) override
+        {
+            (void)audio;
+            ticks_processed++;
+        }
+        size_t ticks_processed = 0;
+    };
+
+    TestHandler t;
+    Mixer ag;
+}
+
 TEST(Mixer, CanRenderSingleChannel)
 {
     // Demonstrate channel rendering with tick handler
