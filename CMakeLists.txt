@@ -28,7 +28,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 include(CTest)
 enable_testing()
 
-file(GLOB PLAYER_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/src/player/*.cpp)
+file(GLOB PLAYER_SOURCE
+          ${CMAKE_CURRENT_SOURCE_DIR}/src/player/*.cpp
+          ${CMAKE_CURRENT_SOURCE_DIR}/src/loader/*.cpp
+          )
 add_subdirectory(tests)
 add_subdirectory(deps/portaudio)
 

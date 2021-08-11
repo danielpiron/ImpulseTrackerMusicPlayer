@@ -50,18 +50,32 @@ std::ostream& operator<<(std::ostream& os, const PatternEntry& pe)
 
     // Start Handle volume
     if (pe._volume_effect.comm == PatternEntry::Command::set_volume) {
-        os << static_cast<int>(pe._volume_effect.data);
+        auto width = os.width();
+        auto fill = os.fill();
+        os << std::setfill('0') << std::setw(2)
+           << static_cast<int>(pe._volume_effect.data);
+        os << std::setfill(fill) << std::setw(static_cast<int>(width));
     } else {
         os << "..";
     }
     os << " ";
     // End Handle
-    if (pe._effect == PatternEntry::Command::none) {
-        os << ".";
-    } else {
-        os << static_cast<char>('A' + static_cast<int>(pe._effect.comm) - 1);
+    switch (pe._effect.comm) {
+    case PatternEntry::Command::set_speed:
+        os << 'A';
+        break;
+    case PatternEntry::Command::jump_to_order:
+        os << 'B';
+        break;
+    case PatternEntry::Command::break_to_row:
+        os << 'C';
+        break;
+    case PatternEntry::Command::set_tempo:
+        os << 'T';
+        break;
+    default:
+        os << '.';
     }
-
     auto width = os.width();
     auto fill = os.fill();
     os << std::setfill('0') << std::setw(2) << std::hex

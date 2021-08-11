@@ -90,6 +90,10 @@ const std::vector<Mixer::Event>& Player::process_tick()
     int channel_index = 0;
     tick_counter = speed;
     for (const auto& entry : next_row()) {
+
+        if (channel_index < 5)
+            std::cout << entry << " ";
+
         process_global_command(entry._effect);
 
         auto& channel = channels[static_cast<size_t>(channel_index)];
@@ -143,5 +147,6 @@ const std::vector<Mixer::Event>& Player::process_tick()
         }
         channel_index++;
     }
+    std::cout << std::endl;
     return mixer_events;
 }
