@@ -48,10 +48,14 @@ Sample load_sample(std::ifstream& fs)
                        return static_cast<float>(byte) / 255.0f * 2.0f - 1.0f;
                    });
 
-    return Sample(float_data.begin(), float_data.end(), meta.sampling_rate,
-                  {meta.flags & 1 ? Sample::LoopParams::Type::forward_looping
-                                  : Sample::LoopParams::Type::non_looping,
-                   meta.loop_begin, meta.loop_end});
+    if (meta.flags & 1) {
+        return Sample(float_data.begin(), float_data.end(), meta.sampling_rate,
+                      {Sample::LoopParams::Type::forward_looping,
+                       meta.loop_begin, meta.loop_end});
+    } else {
+        return Sample(float_data.begin(), float_data.end(), meta.sampling_rate,
+                      {Sample::LoopParams::Type::non_looping});
+    }
 }
 
 PatternEntry::Command s3m_comm_to_effect(const uint8_t comm)

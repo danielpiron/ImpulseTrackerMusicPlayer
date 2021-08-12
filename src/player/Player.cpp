@@ -92,7 +92,7 @@ const std::vector<Mixer::Event>& Player::process_tick()
     for (const auto& entry : next_row()) {
 
         if (channel_index < 8)
-            std::cout << entry << " ";
+            std::cout << entry << "|";
 
         process_global_command(entry._effect);
 
