@@ -157,3 +157,28 @@ TEST(ParsePatternsFromText, CanParseSingleChannel)
     ASSERT_TRUE(parse_pattern(text, result));
     EXPECT_EQ(result, expected);
 }
+
+TEST(ParsePatternsFromText, CanParseMultipleChannels)
+{
+    using NoteName = Pattern::Entry::Note::Name;
+
+    Pattern expected(8);
+    Pattern result(8);
+
+    expected.channel(0).row(0) = {PatternEntry::Note{NoteName::c_natural, 4},
+                                  1};
+    expected.channel(1).row(0) = {PatternEntry::Note{NoteName::e_natural, 4},
+                                  1};
+    expected.channel(1).row(1) = {PatternEntry::Note{NoteName::g_natural, 4},
+                                  1};
+    expected.channel(0).row(2) = {PatternEntry::Note{NoteName::c_natural, 5},
+                                  1};
+
+    auto text = R"(
+    C-4 01 .. .00 E-4 01 .. .00
+    ... .. .. .00 G-4 01 .. .00
+    C-5 01 .. .00
+    )";
+    ASSERT_TRUE(parse_pattern(text, result));
+    EXPECT_EQ(result, expected);
+}

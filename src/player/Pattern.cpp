@@ -4,9 +4,18 @@ bool parse_pattern(std::string::const_iterator& start,
                    const std::string::const_iterator& last, Pattern& pattern)
 {
     size_t current_row = 0;
+    size_t current_channel = 0;
     while (start != last && current_row < pattern.row_count()) {
-        pattern.channel(0).row(current_row++) =
+        pattern.channel(current_channel++).row(current_row) =
             parse_pattern_entry(start, last);
+        // Look for a newline to advance to next row
+        while (std::isspace(*start)) {
+            if (*start++ == '\n') {
+                current_row++;
+                current_channel = 0;
+                break;
+            }
+        }
         skip_whitespace(start);
     }
     return true;
@@ -31,7 +40,10 @@ std::ostream& operator<<(std::ostream& os, const Pattern::Channel& channel)
 
 std::ostream& operator<<(std::ostream& os, const Pattern& pattern)
 {
-    os << "\n";
-    os << pattern.channel(0);
+    for (size_t c = 1; c <= pattern.channel_count(); ++c) {
+        os << "\n"
+           << "Channel " << c << "\n";
+        os << pattern.channel(c - 1);
+    }
     return os;
 }
