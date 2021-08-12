@@ -84,6 +84,22 @@ const std::vector<Mixer::Event>& Player::process_tick()
 
     mixer_events.clear();
     if (--tick_counter > 0) {
+        for (size_t i = 0; i < channels.size(); ++i) {
+            auto& channel = channels[i];
+            channel.last_volume = channel.volume;
+            channel.volume += channel.volume_slide;
+
+            if (channel.volume < 0)
+                channel.volume = 0;
+            if (channel.volume > 64)
+                channel.volume = 64;
+
+            if (channel.volume != channel.last_volume) {
+                mixer_events.push_back(
+                    {i, ::Channel::Event::SetVolume{
+                            static_cast<float>(channel.volume) / 64.0f}});
+            }
+        }
         return mixer_events;
     }
 
@@ -98,6 +114,20 @@ const std::vector<Mixer::Event>& Player::process_tick()
 
         auto& channel = channels[static_cast<size_t>(channel_index)];
         channel.last_volume = channel.volume;
+
+        if (entry._effect.comm == PatternEntry::Command::volume_slide) {
+            auto data = (entry._effect.data) ? entry._effect.data
+                                             : channel.volume_slide_memory;
+
+            channel.volume_slide_memory = data;
+            if ((data & 0x0F) == 0) {
+                channel.volume_slide = data >> 4;
+            } else {
+                channel.volume_slide = -(data & 0x0F);
+            }
+        } else {
+            channel.volume_slide = 0;
+        }
 
         bool candidate_note = false;
         if (!entry._note.is_empty()) {

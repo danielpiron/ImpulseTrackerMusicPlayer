@@ -62,7 +62,7 @@ class Mixer {
                 channel.render(&_auxilliary_buffer[0], samples_to_render,
                                _sample_rate);
                 for (size_t i = 0; i < samples_to_render; ++i) {
-                    outputBuffer[i] += _auxilliary_buffer[i] * .125f;
+                    outputBuffer[i] += _auxilliary_buffer[i];
                 }
             }
             outputBuffer += samples_to_render;

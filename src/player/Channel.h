@@ -96,8 +96,7 @@ class Channel {
                 }
                 _sampleIndex -= static_cast<float>(_sample->loopLength());
             }
-            *outputBuffer++ =
-                (*_sample)[static_cast<size_t>(_sampleIndex)] * _volume;
+            *outputBuffer++ = (*_sample)[_sampleIndex] * _volume;
             _sampleIndex += rate;
         }
     }

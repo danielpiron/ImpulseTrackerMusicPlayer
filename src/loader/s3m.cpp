@@ -69,6 +69,8 @@ PatternEntry::Command s3m_comm_to_effect(const uint8_t comm)
         return PatternEntry::Command::jump_to_order;
     case 'C':
         return PatternEntry::Command::break_to_row;
+    case 'D':
+        return PatternEntry::Command::volume_slide;
     case 'T':
         return PatternEntry::Command::set_tempo;
     default:

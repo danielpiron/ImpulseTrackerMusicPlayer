@@ -21,6 +21,8 @@ struct Player : public Mixer::TickHandler {
         PatternEntry::Inst last_inst = 0;
         int8_t last_volume;
         int8_t volume = 64;
+        uint8_t volume_slide_memory = 0;
+        int8_t volume_slide = 0;
     };
 
     Player(const std::shared_ptr<Module>& mod);

@@ -70,6 +70,9 @@ std::ostream& operator<<(std::ostream& os, const PatternEntry& pe)
     case PatternEntry::Command::break_to_row:
         os << 'C';
         break;
+    case PatternEntry::Command::volume_slide:
+        os << 'D';
+        break;
     case PatternEntry::Command::set_tempo:
         os << 'T';
         break;
