@@ -84,4 +84,6 @@ class Mixer {
     std::vector<Channel> _channels;
 };
 
+extern std::ostream& operator<<(std::ostream& os, const Mixer::Event& event);
+
 #endif

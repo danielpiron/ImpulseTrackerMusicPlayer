@@ -90,6 +90,7 @@ const std::vector<Mixer::Event>& Player::process_tick()
 
         int channel_index = 0;
         auto& channel = channels[static_cast<size_t>(channel_index)];
+        channel.last_volume = channel.volume;
 
         bool candidate_note = false;
         if (!entry._note.is_empty()) {
@@ -106,26 +107,32 @@ const std::vector<Mixer::Event>& Player::process_tick()
             auto note_st3period =
                 ((8363 * 32 * note_periods[channel.last_note.index()]) >>
                  channel.last_note.octave()) /
-                static_cast<int>(
-                    module->samples[channel.last_inst - 1].playbackRate());
+                static_cast<int>(module->samples[channel.last_inst - 1]
+                                     .sample.playbackRate());
             auto playback_frequency = 14317456 / note_st3period;
 
+            channel.volume =
+                module->samples[channel.last_inst - 1].default_volume;
             mixer_events.push_back(
                 {static_cast<size_t>(channel_index),
                  ::Channel::Event::SetNoteOn{
                      static_cast<float>(playback_frequency),
-                     &(module->samples[channel.last_inst - 1])}});
+                     &(module->samples[channel.last_inst - 1].sample)}});
         }
 
         switch (entry._volume_effect.comm) {
         case PatternEntry::Command::set_volume:
-            mixer_events.push_back(
-                {static_cast<size_t>(channel_index),
-                 ::Channel::Event::SetVolume{
-                     static_cast<float>(entry._volume_effect.data) / 64.0f}});
+            channel.volume = static_cast<int8_t>(entry._volume_effect.data);
             break;
         default:
             break;
+        }
+
+        if (channel.volume != channel.last_volume) {
+            mixer_events.push_back(
+                {static_cast<size_t>(channel_index),
+                 ::Channel::Event::SetVolume{
+                     static_cast<float>(channel.volume) / 64.0f}});
         }
     }
     return mixer_events;

@@ -42,6 +42,8 @@ class Sample {
     {
     }
 
+    Sample(const Sample&& other) : _data(other._data), _playbackRate(other._playbackRate), _loop(other._loop) {}
+
     inline float operator[](float i) const
     {
         auto wholeI = static_cast<size_t>(i);

@@ -1,5 +1,5 @@
-[ ] Module samples have a default volume.
-    [ ] When a note is played without an explicit volume,
+[X] Module samples have a default volume.
+    [X] When a note is played without an explicit volume,
         the channel volume is set to the sample's "default"
 [ ] Handle multiple channels in a pattern.
 [ ] Implement volume slide effect.

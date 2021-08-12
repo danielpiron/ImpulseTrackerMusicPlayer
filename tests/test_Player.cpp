@@ -7,6 +7,36 @@
 
 #include <memory>
 
+std::ostream& operator<<(std::ostream& os, const Mixer::Event& event)
+{
+    os << "Channel " << event.channel << " " << event.action;
+    return os;
+}
+
+std::ostream& operator<<(std::ostream& os, const Channel::Event::Action& action)
+{
+    struct ActionPrinter {
+        void operator()(const Channel::Event::SetFrequency& sf)
+        {
+            os << "set frequency to " << sf.frequency;
+        }
+        void operator()(const Channel::Event::SetNoteOn& no)
+        {
+            os << "set note on (frequency: " << no.frequency
+               << ", sample: " << no.sample;
+        }
+        void operator()(const Channel::Event::SetVolume& v)
+        {
+            os << "set volume to " << v.volume;
+        }
+        std::ostream& os;
+    };
+
+    std::visit(ActionPrinter{os}, action);
+
+    return os;
+}
+
 class PlayerTest : public ::testing::Test {
   protected:
     void SetUp() override
@@ -16,8 +46,8 @@ class PlayerTest : public ::testing::Test {
         mod->initial_tempo = 125;
         mod->patterns.resize(1, Pattern(8));
         mod->patternOrder = {0, 255};
-        mod->samples = {Sample{{0.5f, 1.0f, 0.5f, 1.0f}, 8363},
-                        Sample{{0.5f, 1.0f, 0.5f, 1.0f}, 8363 * 2}};
+        mod->samples.emplace_back(Sample{{0.5f, 1.0f, 0.5f, 1.0f}, 8363});
+        mod->samples.emplace_back(Sample{{0.5f, 1.0f, 0.5f, 1.0f}, 8363 * 2});
     }
     void TearDown() override { mod = nullptr; }
     std::shared_ptr<Module> mod;
@@ -143,25 +173,25 @@ TEST_F(PlayerNoteInterpretation, CanEmitSetNoteOnEvents)
     {
         const auto& events = player.process_tick();
         std::vector<Mixer::Event> expected{
-            {0, Channel::Event::SetNoteOn{8363.0, &mod->samples[0]}}};
+            {0, Channel::Event::SetNoteOn{8363.0, &mod->samples[0].sample}}};
         EXPECT_EQ(events, expected);
     }
     {
         const auto& events = player.process_tick();
         std::vector<Mixer::Event> expected{
-            {0, Channel::Event::SetNoteOn{10558.0f, &mod->samples[0]}}};
+            {0, Channel::Event::SetNoteOn{10558.0f, &mod->samples[0].sample}}};
         EXPECT_EQ(events, expected);
     }
     {
         const auto& events = player.process_tick();
         std::vector<Mixer::Event> expected{
-            {0, Channel::Event::SetNoteOn{12559.0f, &mod->samples[0]}}};
+            {0, Channel::Event::SetNoteOn{12559.0f, &mod->samples[0].sample}}};
         EXPECT_EQ(events, expected);
     }
     {
         const auto& events = player.process_tick();
         std::vector<Mixer::Event> expected{
-            {0, Channel::Event::SetNoteOn{16726.0f, &mod->samples[0]}}};
+            {0, Channel::Event::SetNoteOn{16726.0f, &mod->samples[0].sample}}};
         EXPECT_EQ(events, expected);
     }
 }
@@ -182,7 +212,7 @@ TEST_F(PlayerNoteInterpretation, CanTriggerIncompleteNotes)
     {
         const auto& events = player.process_tick();
         std::vector<Mixer::Event> expected{
-            {0, Channel::Event::SetNoteOn{8363.0f, &mod->samples[0]}}};
+            {0, Channel::Event::SetNoteOn{8363.0f, &mod->samples[0].sample}}};
         EXPECT_EQ(events, expected);
     }
     {
@@ -193,7 +223,7 @@ TEST_F(PlayerNoteInterpretation, CanTriggerIncompleteNotes)
     {
         const auto& events = player.process_tick();
         std::vector<Mixer::Event> expected{
-            {0, Channel::Event::SetNoteOn{16726.0f, &mod->samples[0]}}};
+            {0, Channel::Event::SetNoteOn{16726.0f, &mod->samples[0].sample}}};
         EXPECT_EQ(events, expected);
     }
 }
@@ -208,13 +238,41 @@ TEST_F(PlayerNoteInterpretation, SampleFrequencyAffectsSetFrequency)
     {
         const auto& events = player.process_tick();
         std::vector<Mixer::Event> expected{
-            {0, Channel::Event::SetNoteOn{8363.0f, &mod->samples[0]}}};
+            {0, Channel::Event::SetNoteOn{8363.0f, &mod->samples[0].sample}}};
         EXPECT_EQ(events, expected);
     }
     {
         const auto& events = player.process_tick();
         std::vector<Mixer::Event> expected{
-            {0, Channel::Event::SetNoteOn{16726.0f, &mod->samples[1]}}};
+            {0, Channel::Event::SetNoteOn{16726.0f, &mod->samples[1].sample}}};
+        EXPECT_EQ(events, expected);
+    }
+}
+
+TEST_F(PlayerNoteInterpretation, SamplesHaveDefaultVolume)
+{
+    ASSERT_TRUE(parse_pattern(R"(
+                                C-5 03 .. .00
+                                C-5 01 .. .00
+                                )",
+                              mod->patterns[0]));
+
+    mod->samples.push_back(Module::Sample(Sample{{1.0f}, 8363}));
+    mod->samples.back().default_volume = 32;
+
+    Player player(mod);
+    {
+        const auto& events = player.process_tick();
+        std::vector<Mixer::Event> expected{
+            {0, Channel::Event::SetNoteOn{8363.0f, &mod->samples[2].sample}},
+            {0, Channel::Event::SetVolume{0.5f}}};
+        EXPECT_EQ(events, expected);
+    }
+    {
+        const auto& events = player.process_tick();
+        std::vector<Mixer::Event> expected{
+            {0, Channel::Event::SetNoteOn{8363.0f, &mod->samples[0].sample}},
+            {0, Channel::Event::SetVolume{1.0f}}};
         EXPECT_EQ(events, expected);
     }
 }
@@ -276,7 +334,8 @@ TEST_F(PlayerBehavior, PlayerSpeedHasSignificance)
     {
         const auto& events = player.process_tick();
         std::vector<Mixer::Event> expected{
-            {0, Channel::Event::SetNoteOn{8363.0, &mod->samples[0]}}};
+            {0, Channel::Event::SetNoteOn{8363.0, &mod->samples[0].sample}},
+            {0, Channel::Event::SetVolume{1.0f}}};
         EXPECT_EQ(events, expected);
     }
 }

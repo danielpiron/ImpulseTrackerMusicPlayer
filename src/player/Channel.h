@@ -113,4 +113,7 @@ class Channel {
     bool _is_active = false;
 };
 
+extern std::ostream& operator<<(std::ostream& os,
+                                const Channel::Event::Action& action);
+
 #endif

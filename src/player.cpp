@@ -25,8 +25,8 @@ static void StreamFinished(void* userData)
     std::cout << "Stream complete" << std::endl;
 }
 
-static Sample generateSinewave(int sampling_rate,
-                               float target_frequency = 523.25f)
+static Module::Sample generateSinewave(int sampling_rate,
+                                       float target_frequency = 523.25f)
 {
     std::vector<float> sampleData(
         static_cast<size_t>(static_cast<float>(sampling_rate) /
@@ -36,8 +36,8 @@ static Sample generateSinewave(int sampling_rate,
             static_cast<float>(sin(M_PI * 2.0 * static_cast<double>(i) /
                                    static_cast<double>(sampleData.size())));
     }
-    return Sample(sampleData.begin(), sampleData.end(),
-                  static_cast<size_t>(sampling_rate));
+    return Module::Sample(Sample(sampleData.begin(), sampleData.end(),
+                                 static_cast<size_t>(sampling_rate)));
 }
 
 int main()
@@ -66,7 +66,7 @@ int main()
     mod->initial_speed = 6;
     mod->patternOrder = {0, 255};
     mod->patterns.resize(6, Module::Pattern(16));
-    mod->samples = {generateSinewave(22050)};
+    mod->samples.emplace_back(generateSinewave(22050));
 
     parse_pattern(R"(
         C-6 01 .. .00
