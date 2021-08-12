@@ -36,7 +36,7 @@ add_subdirectory(tests)
 add_subdirectory(deps/portaudio)
 
 add_executable(player ${PLAYER_SOURCE} src/player.cpp)
-target_compile_options(player PUBLIC ${CLANG_WARNINGS} -Werror -fsanitize=address)
+target_compile_options(player PUBLIC ${CLANG_WARNINGS} -Werror -fsanitize=address -g)
 target_link_options(player PUBLIC -fsanitize=address)
 target_link_libraries(player PUBLIC portaudio)
 target_include_directories(player PRIVATE "${PROJECT_BINARY_DIR}" ${CMAKE_CURRENT_SOURCE_DIR}/src)

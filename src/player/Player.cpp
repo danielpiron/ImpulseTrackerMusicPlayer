@@ -91,7 +91,7 @@ const std::vector<Mixer::Event>& Player::process_tick()
     tick_counter = speed;
     for (const auto& entry : next_row()) {
 
-        if (channel_index < 5)
+        if (channel_index < 8)
             std::cout << entry << " ";
 
         process_global_command(entry._effect);

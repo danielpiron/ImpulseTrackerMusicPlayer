@@ -91,7 +91,7 @@ Pattern load_pattern(std::ifstream& fs)
         }
 
         PatternEntry entry;
-        int channel = control & 31 - 1;
+        int channel = control & 31;
         if (control & 32) {
             // byte 0 - Note; hi=oct, lo=note, 255=empty note,↲
             //          254=key off
@@ -155,7 +155,7 @@ std::shared_ptr<Module> load_s3m(std::ifstream& s3m)
              sizeof(instrument_pointers[0]) * ins_num);
 
     std::vector<uint16_t> pattern_pointers;
-    pattern_pointers.resize(ins_num);
+    pattern_pointers.resize(pat_num);
     s3m.read(reinterpret_cast<char*>(&pattern_pointers[0]),
              sizeof(pattern_pointers[0]) * pat_num);
 
