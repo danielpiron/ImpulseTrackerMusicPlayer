@@ -129,9 +129,7 @@ const std::vector<Mixer::Event>& Player::process_tick()
     }
 
     int channel_index = 0;
-    tick_counter = speed;
     for (const auto& entry : next_row()) {
-
         if (channel_index < 8)
             std::cout << entry << "|";
 
@@ -152,9 +150,6 @@ const std::vector<Mixer::Event>& Player::process_tick()
             }
         } else {
             channel.volume_slide = 0;
-        }
-
-        if (entry._effect.comm == PatternEntry::Command::pitch_slide_up) {
         }
 
         bool candidate_note = false;
@@ -179,6 +174,19 @@ const std::vector<Mixer::Event>& Player::process_tick()
                 module->samples[static_cast<size_t>(channel.last_inst - 1)]
                     .default_volume;
 
+            if (entry._effect.comm != PatternEntry::Command::portamento) {
+                channel.period = note_st3period;
+                auto playback_frequency = 14317456 / note_st3period;
+                mixer_events.push_back(
+                    {static_cast<size_t>(channel_index),
+                     ::Channel::Event::SetNoteOn{
+                         static_cast<float>(playback_frequency),
+                         &(module
+                               ->samples[static_cast<size_t>(channel.last_inst -
+                                                             1)]
+                               .sample)}});
+            }
+
             if (entry._effect.comm == PatternEntry::Command::pitch_slide_down ||
                 entry._effect.comm == PatternEntry::Command::pitch_slide_up ||
                 entry._effect.comm == PatternEntry::Command::portamento) {
@@ -199,23 +207,6 @@ const std::vector<Mixer::Event>& Player::process_tick()
                     channel.pitch_slide = -channel.pitch_slide;
                 }
             }
-
-            if (entry._effect.comm != PatternEntry::Command::portamento) {
-                channel.period = note_st3period;
-                auto playback_frequency = 14317456 / note_st3period;
-
-                channel.volume =
-                    module->samples[static_cast<size_t>(channel.last_inst - 1)]
-                        .default_volume;
-                mixer_events.push_back(
-                    {static_cast<size_t>(channel_index),
-                     ::Channel::Event::SetNoteOn{
-                         static_cast<float>(playback_frequency),
-                         &(module
-                               ->samples[static_cast<size_t>(channel.last_inst -
-                                                             1)]
-                               .sample)}});
-            }
         }
 
         switch (entry._volume_effect.comm) {
@@ -234,6 +225,7 @@ const std::vector<Mixer::Event>& Player::process_tick()
         }
         channel_index++;
     }
+    tick_counter = speed;
     std::cout << std::endl;
     return mixer_events;
 }
