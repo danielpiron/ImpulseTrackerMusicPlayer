@@ -2,6 +2,7 @@
 #include <cinttypes>
 #include <fstream>
 #include <iostream>
+#include <memory>
 
 #include <player/Module.h>
 #include <player/PatternEntry.h>
@@ -61,7 +62,7 @@ Sample load_sample(std::ifstream& fs)
 PatternEntry::Command s3m_comm_to_effect(const uint8_t comm)
 {
     // Offset the command with it's letter representation for easier reading
-    char letter = static_cast<char>(comm - 1) + 'A';
+    char letter = static_cast<char>(comm - 1 + 'A');
     switch (letter) {
     case 'A':
         return PatternEntry::Command::set_speed;
@@ -71,6 +72,12 @@ PatternEntry::Command s3m_comm_to_effect(const uint8_t comm)
         return PatternEntry::Command::break_to_row;
     case 'D':
         return PatternEntry::Command::volume_slide;
+    case 'E':
+        return PatternEntry::Command::pitch_slide_down;
+    case 'F':
+        return PatternEntry::Command::pitch_slide_up;
+    case 'G':
+        return PatternEntry::Command::portamento;
     case 'T':
         return PatternEntry::Command::set_tempo;
     default:
@@ -108,7 +115,7 @@ Pattern load_pattern(std::ifstream& fs)
                 entry._note =
                     PatternEntry::Note{PatternEntry::Note::Type::note_off};
             } else if (note != empty_note) {
-                uint8_t octave = (note >> 4) + 1;
+                uint8_t octave = static_cast<uint8_t>((note >> 4) + 1);
                 note &= 0x0F;
                 entry._note = PatternEntry::Note{note, octave};
             }
@@ -127,7 +134,7 @@ Pattern load_pattern(std::ifstream& fs)
 
             auto command = s3m_comm_to_effect(comm);
             if (command == PatternEntry::Command::break_to_row) {
-                info = (info >> 4) * 10 + (info & 0x0F);
+                info = static_cast<uint8_t>((info >> 4) * 10 + (info & 0x0F));
             }
             entry._effect = PatternEntry::Effect{command, info};
         }
@@ -161,13 +168,15 @@ std::shared_ptr<Module> load_s3m(std::ifstream& s3m)
 
     std::vector<uint16_t> instrument_pointers;
     instrument_pointers.resize(ins_num);
-    s3m.read(reinterpret_cast<char*>(&instrument_pointers[0]),
-             sizeof(instrument_pointers[0]) * ins_num);
+    s3m.read(
+        reinterpret_cast<char*>(&instrument_pointers[0]),
+        static_cast<std::streamsize>(sizeof(instrument_pointers[0]) * ins_num));
 
     std::vector<uint16_t> pattern_pointers;
     pattern_pointers.resize(pat_num);
-    s3m.read(reinterpret_cast<char*>(&pattern_pointers[0]),
-             sizeof(pattern_pointers[0]) * pat_num);
+    s3m.read(
+        reinterpret_cast<char*>(&pattern_pointers[0]),
+        static_cast<std::streamsize>(sizeof(pattern_pointers[0]) * pat_num));
 
     // Load Samples
     for (const auto pointer : instrument_pointers) {

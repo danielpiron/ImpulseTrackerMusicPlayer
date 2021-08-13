@@ -23,6 +23,12 @@ struct Player : public Mixer::TickHandler {
         int8_t volume = 64;
         uint8_t volume_slide_memory = 0;
         int8_t volume_slide = 0;
+
+        int last_period;
+        int period;
+        int target_period;
+        int pitch_slide;
+        uint8_t pitch_slide_memory = 0;
     };
 
     Player(const std::shared_ptr<Module>& mod);

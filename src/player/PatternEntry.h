@@ -70,6 +70,9 @@ struct PatternEntry {
         jump_to_order,
         break_to_row,
         volume_slide,
+        pitch_slide_down,
+        pitch_slide_up,
+        portamento,
         set_tempo,
         set_volume
     };

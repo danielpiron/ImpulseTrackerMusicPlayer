@@ -74,8 +74,9 @@ void Player::process_global_command(const PatternEntry::Effect& effect)
         break;
     case PatternEntry::Command::set_tempo:
         tempo = effect.data;
-        _mixer.set_samples_per_tick(
-            static_cast<size_t>(2.5f * _mixer.sampling_rate() / tempo));
+        _mixer.set_samples_per_tick(static_cast<size_t>(
+            2.5f * static_cast<float>(_mixer.sampling_rate()) /
+            static_cast<float>(tempo)));
         break;
     default:
         break;
@@ -91,6 +92,8 @@ const std::vector<Mixer::Event>& Player::process_tick()
     if (--tick_counter > 0) {
         for (size_t i = 0; i < channels.size(); ++i) {
             auto& channel = channels[i];
+
+            // Volume Slide
             channel.last_volume = channel.volume;
             channel.volume += channel.volume_slide;
 
@@ -103,6 +106,23 @@ const std::vector<Mixer::Event>& Player::process_tick()
                 mixer_events.push_back(
                     {i, ::Channel::Event::SetVolume{
                             static_cast<float>(channel.volume) / 64.0f}});
+            }
+
+            // Pitch Slide
+            channel.last_period = channel.period;
+            channel.period += channel.pitch_slide;
+            if ((channel.pitch_slide > 0 &&
+                 channel.period > channel.target_period) ||
+                (channel.pitch_slide < 0 &&
+                 channel.period < channel.target_period)) {
+                channel.period = channel.target_period;
+                channel.pitch_slide = 0;
+            }
+
+            if (channel.period != channel.last_period) {
+                mixer_events.push_back(
+                    {i, ::Channel::Event::SetFrequency{
+                            static_cast<float>(14317456 / channel.period)}});
             }
         }
         return mixer_events;
@@ -134,6 +154,9 @@ const std::vector<Mixer::Event>& Player::process_tick()
             channel.volume_slide = 0;
         }
 
+        if (entry._effect.comm == PatternEntry::Command::pitch_slide_up) {
+        }
+
         bool candidate_note = false;
         if (!entry._note.is_empty()) {
             channel.last_note = entry._note;
@@ -152,18 +175,47 @@ const std::vector<Mixer::Event>& Player::process_tick()
                 static_cast<int>(
                     module->samples[static_cast<size_t>(channel.last_inst - 1)]
                         .sample.playbackRate());
-            auto playback_frequency = 14317456 / note_st3period;
-
             channel.volume =
                 module->samples[static_cast<size_t>(channel.last_inst - 1)]
                     .default_volume;
-            mixer_events.push_back(
-                {static_cast<size_t>(channel_index),
-                 ::Channel::Event::SetNoteOn{
-                     static_cast<float>(playback_frequency),
-                     &(module
-                           ->samples[static_cast<size_t>(channel.last_inst - 1)]
-                           .sample)}});
+
+            if (entry._effect.comm == PatternEntry::Command::pitch_slide_down ||
+                entry._effect.comm == PatternEntry::Command::pitch_slide_up ||
+                entry._effect.comm == PatternEntry::Command::portamento) {
+                auto data = entry._effect.data ? entry._effect.data
+                                               : channel.pitch_slide_memory;
+                channel.pitch_slide_memory = data;
+                channel.pitch_slide = data * 4;
+                if (entry._effect.comm == PatternEntry::Command::portamento) {
+                    channel.target_period = note_st3period;
+                } else if (entry._effect.comm ==
+                           PatternEntry::Command::pitch_slide_up) {
+                    channel.target_period = 1; // calculate for lowest
+                } else if (entry._effect.comm ==
+                           PatternEntry::Command::pitch_slide_down) {
+                    channel.target_period = 100000; // calculate for highest
+                }
+                if (channel.target_period < channel.period) {
+                    channel.pitch_slide = -channel.pitch_slide;
+                }
+            }
+
+            if (entry._effect.comm != PatternEntry::Command::portamento) {
+                channel.period = note_st3period;
+                auto playback_frequency = 14317456 / note_st3period;
+
+                channel.volume =
+                    module->samples[static_cast<size_t>(channel.last_inst - 1)]
+                        .default_volume;
+                mixer_events.push_back(
+                    {static_cast<size_t>(channel_index),
+                     ::Channel::Event::SetNoteOn{
+                         static_cast<float>(playback_frequency),
+                         &(module
+                               ->samples[static_cast<size_t>(channel.last_inst -
+                                                             1)]
+                               .sample)}});
+            }
         }
 
         switch (entry._volume_effect.comm) {

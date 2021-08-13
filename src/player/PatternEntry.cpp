@@ -73,6 +73,15 @@ std::ostream& operator<<(std::ostream& os, const PatternEntry& pe)
     case PatternEntry::Command::volume_slide:
         os << 'D';
         break;
+    case PatternEntry::Command::pitch_slide_up:
+        os << 'E';
+        break;
+    case PatternEntry::Command::pitch_slide_down:
+        os << 'F';
+        break;
+    case PatternEntry::Command::portamento:
+        os << 'G';
+        break;
     case PatternEntry::Command::set_tempo:
         os << 'T';
         break;
