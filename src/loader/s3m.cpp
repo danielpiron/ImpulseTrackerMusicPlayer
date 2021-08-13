@@ -124,8 +124,12 @@ Pattern load_pattern(std::ifstream& fs)
         if (control & 128) {
             uint8_t comm = *data++;
             uint8_t info = *data++;
-            entry._effect =
-                PatternEntry::Effect{s3m_comm_to_effect(comm), info};
+
+            auto command = s3m_comm_to_effect(comm);
+            if (command == PatternEntry::Command::break_to_row) {
+                info = (info >> 4) * 10 + (info & 0x0F);
+            }
+            entry._effect = PatternEntry::Effect{command, info};
         }
         pattern.channel(static_cast<size_t>(channel))
             .row(static_cast<size_t>(row)) = entry;

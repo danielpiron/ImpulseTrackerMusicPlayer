@@ -27,8 +27,13 @@ static void StreamFinished(void* userData)
     std::cout << "Stream complete" << std::endl;
 }
 
-int main()
+int main(int argc, char* argv[])
 {
+
+    if (argc < 2) {
+        std::cout << "S3M filename please" << std::endl;
+        exit(1);
+    }
 
     PaError err;
     err = Pa_Initialize();
@@ -45,10 +50,10 @@ int main()
     outputParameters.channelCount = 1;
     outputParameters.sampleFormat = paFloat32;
     outputParameters.suggestedLatency =
-        Pa_GetDeviceInfo(outputParameters.device)->defaultLowOutputLatency;
+        Pa_GetDeviceInfo(outputParameters.device)->defaultHighOutputLatency;
     outputParameters.hostApiSpecificStreamInfo = NULL;
 
-    std::ifstream s3m("/Users/pironvila/Downloads/INSIDE.S3M", s3m.binary);
+    std::ifstream s3m(argv[1], s3m.binary);
 
     auto mod = load_s3m(s3m);
     Player player(mod);
