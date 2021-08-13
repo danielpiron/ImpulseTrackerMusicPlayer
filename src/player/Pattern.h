@@ -3,7 +3,7 @@
 
 #include <player/PatternEntry.h>
 
-#include <iostream>
+#include <ostream>
 #include <string>
 #include <vector>
 

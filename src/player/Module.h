@@ -8,7 +8,7 @@
 #include <vector>
 
 struct Module {
-    using Pattern = Pattern;
+    using Pattern = ::Pattern;
 
     struct Sample {
         Sample(const ::Sample&& mixer_sample) : sample(std::move(mixer_sample))

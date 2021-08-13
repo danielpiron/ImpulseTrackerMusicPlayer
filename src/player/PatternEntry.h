@@ -2,7 +2,7 @@
 #define _PATTERN_ENTRY_H_
 
 #include <cstdint>
-#include <iostream>
+#include <ostream>
 
 struct PatternEntry {
 
@@ -74,8 +74,8 @@ struct PatternEntry {
     };
 
     struct Effect {
-        Effect(Command comm = Command::none, int data = 0)
-            : comm(comm), data(static_cast<uint8_t>(data))
+        Effect(Command comm_ = Command::none, int data_ = 0)
+            : comm(comm_), data(static_cast<uint8_t>(data_))
         {
         }
 

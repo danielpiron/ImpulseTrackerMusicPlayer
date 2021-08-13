@@ -15,7 +15,8 @@ Player::Player(const std::shared_ptr<Module>& mod)
 void Player::onAttachment(Mixer& audio)
 {
     audio.set_samples_per_tick(
-        static_cast<size_t>(2.5f * audio.sampling_rate() / tempo));
+        static_cast<size_t>(2.5f * static_cast<float>(audio.sampling_rate()) /
+                            static_cast<float>(tempo)));
 }
 
 void Player::onTick(Mixer& audio)
@@ -109,17 +110,21 @@ const std::vector<Mixer::Event>& Player::process_tick()
             auto note_st3period =
                 ((8363 * 32 * note_periods[channel.last_note.index()]) >>
                  channel.last_note.octave()) /
-                static_cast<int>(module->samples[channel.last_inst - 1]
-                                     .sample.playbackRate());
+                static_cast<int>(
+                    module->samples[static_cast<size_t>(channel.last_inst - 1)]
+                        .sample.playbackRate());
             auto playback_frequency = 14317456 / note_st3period;
 
             channel.volume =
-                module->samples[channel.last_inst - 1].default_volume;
+                module->samples[static_cast<size_t>(channel.last_inst - 1)]
+                    .default_volume;
             mixer_events.push_back(
                 {static_cast<size_t>(channel_index),
                  ::Channel::Event::SetNoteOn{
                      static_cast<float>(playback_frequency),
-                     &(module->samples[channel.last_inst - 1].sample)}});
+                     &(module
+                           ->samples[static_cast<size_t>(channel.last_inst - 1)]
+                           .sample)}});
         }
 
         switch (entry._volume_effect.comm) {

@@ -4,6 +4,7 @@
 #include "Sample.h"
 
 #include <cstring>
+#include <ostream>
 #include <variant>
 
 class Channel {

@@ -2,6 +2,7 @@
 #define _MIXER_H_
 
 #include <list>
+#include <ostream>
 #include <vector>
 
 #include "Channel.h"
