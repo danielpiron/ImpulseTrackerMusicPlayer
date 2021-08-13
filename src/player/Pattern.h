@@ -26,25 +26,17 @@ class Pattern {
     };
 
   public:
-    Pattern(size_t row_count) : _row_count(row_count)
+    Pattern(size_t row_count)
+        : _channels(32, Channel(row_count)), _row_count(row_count)
     {
-        // Patterns have a capacity of 32 channels, but start off with just one
-        _channels.reserve(32);
-        _channels.resize(1, Channel(_row_count));
     }
+
     bool operator==(const Pattern& rhs) const
     {
         return _channels == rhs._channels;
     }
 
-    Channel& channel(size_t c)
-    {
-        assert(c < _channels.capacity());
-        if (c >= _channels.size()) {
-            _channels.resize(c + 1, Channel(_row_count));
-        }
-        return _channels[c];
-    }
+    Channel& channel(size_t c) { return _channels[c]; }
     const Channel& channel(size_t c) const { return _channels[c]; }
     size_t row_count() const { return _row_count; }
     size_t channel_count() const { return _channels.size(); }

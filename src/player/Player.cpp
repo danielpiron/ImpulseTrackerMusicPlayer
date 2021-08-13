@@ -7,7 +7,7 @@
 Player::Player(const std::shared_ptr<Module>& mod)
     : module(std::const_pointer_cast<const Module>(mod)),
       speed(mod->initial_speed), tempo(mod->initial_tempo), tick_counter(1),
-      current_row(0), current_order(0), channels(1), _mixer(44100, 16)
+      current_row(0), current_order(0), channels(32), _mixer(44100, 16)
 {
     _mixer.attach_handler(this);
 }
@@ -33,7 +33,9 @@ const std::vector<PatternEntry>& Player::next_row()
         module->patterns[module->patternOrder[current_order]];
 
     row.clear();
-    row.push_back(current_pattern.channel(0).row(current_row));
+    for (size_t i = 0; i < current_pattern.channel_count(); ++i) {
+        row.push_back(current_pattern.channel(i).row(current_row));
+    }
 
     if (++current_row == current_pattern.row_count()) {
         current_order++;
@@ -84,11 +86,11 @@ const std::vector<Mixer::Event>& Player::process_tick()
         return mixer_events;
     }
 
+    int channel_index = 0;
     tick_counter = speed;
     for (const auto& entry : next_row()) {
         process_global_command(entry._effect);
 
-        int channel_index = 0;
         auto& channel = channels[static_cast<size_t>(channel_index)];
         channel.last_volume = channel.volume;
 
@@ -134,6 +136,7 @@ const std::vector<Mixer::Event>& Player::process_tick()
                  ::Channel::Event::SetVolume{
                      static_cast<float>(channel.volume) / 64.0f}});
         }
+        channel_index++;
     }
     return mixer_events;
 }

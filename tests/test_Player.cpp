@@ -277,6 +277,22 @@ TEST_F(PlayerNoteInterpretation, SamplesHaveDefaultVolume)
     }
 }
 
+TEST_F(PlayerNoteInterpretation, CanPlayMultipleChannels)
+{
+    ASSERT_TRUE(parse_pattern(R"(
+                                C-4 02 .. .00 C-5 01 .. .00
+                                )",
+                              mod->patterns[0]));
+    Player player(mod);
+    {
+        const auto& events = player.process_tick();
+        std::vector<Mixer::Event> expected{
+            {0, Channel::Event::SetNoteOn{8363.0f, &mod->samples[1].sample}},
+            {1, Channel::Event::SetNoteOn{8363.0f, &mod->samples[0].sample}}};
+        EXPECT_EQ(events, expected);
+    }
+}
+
 TEST_F(PlayerBehavior, PlayerLoopsAfterLastPattern)
 {
     const auto row_count = 8;
