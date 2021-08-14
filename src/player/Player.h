@@ -16,10 +16,18 @@ struct Player : public Mixer::TickHandler {
     void onTick(Mixer& audio) override;
 
     struct Channel {
+
+        struct EffectsMemory {
+            uint8_t volume_slide;
+        };
+
       public:
         PatternEntry::Note last_note;
         PatternEntry::Inst last_inst = 0;
-        int8_t last_volume;
+
+        EffectsMemory effects_memory;
+
+      public:
         int8_t volume = 64;
     };
 

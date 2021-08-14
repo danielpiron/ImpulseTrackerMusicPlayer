@@ -91,7 +91,7 @@ const std::vector<Mixer::Event>& Player::process_tick()
         process_global_command(entry._effect);
 
         auto& channel = channels[static_cast<size_t>(channel_index)];
-        channel.last_volume = channel.volume;
+        auto last_volume = channel.volume;
 
         bool candidate_note = false;
         if (!entry._note.is_empty()) {
@@ -129,7 +129,21 @@ const std::vector<Mixer::Event>& Player::process_tick()
             break;
         }
 
-        if (channel.volume != channel.last_volume) {
+        if (entry._effect.comm == PatternEntry::Command::volume_slide) {
+            auto data = entry._effect.data
+                            ? entry._effect.data
+                            : channel.effects_memory.volume_slide;
+            channel.effects_memory.volume_slide = data;
+            if ((data & 0xF0) == 0xF0) {
+                // Fine slide down
+                channel.volume -= data & 0x0F;
+            } else if ((data & 0x0F) == 0x0F) {
+                // Fine slide up
+                channel.volume += data >> 4;
+            }
+        }
+
+        if (channel.volume != last_volume) {
             mixer_events.push_back(
                 {static_cast<size_t>(channel_index),
                  ::Channel::Event::SetVolume{

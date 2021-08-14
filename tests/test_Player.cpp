@@ -56,6 +56,9 @@ class PlayerTest : public ::testing::Test {
 class PlayerGlobalEffects : public PlayerTest {
 };
 
+class PlayerChannelEffects : public PlayerTest {
+};
+
 class PlayerNoteInterpretation : public PlayerTest {
 };
 
@@ -134,6 +137,49 @@ TEST_F(PlayerGlobalEffects, CanHandleSetTempoCommand)
     player.process_tick();
 
     EXPECT_EQ(player.tempo, 128);
+}
+
+TEST_F(PlayerChannelEffects, CanHandleFineVolumeSlide)
+{
+    const std::vector<Mixer::Event> volume_at_3_4ths{
+        {0, Channel::Event::SetVolume{0.75f}}};
+    const std::vector<Mixer::Event> no_events{};
+
+    ASSERT_TRUE(parse_pattern(R"(C-5 01 64 DF8
+                                 ... .. .. D00
+                                 C-5 01 32 D8F
+                                 ... .. .. D00)",
+                              mod->patterns[0]));
+
+    mod->initial_speed = 2;
+    Player player(mod);
+    // START ROW 1
+    { // Initial note of "Fine Volume Slide" will already experience decrease
+        std::vector<Mixer::Event> expected{
+            {0, Channel::Event::SetNoteOn{8363.0, &mod->samples[0].sample}},
+            {0, Channel::Event::SetVolume{1.0f - .125f}}};
+        EXPECT_EQ(player.process_tick(), expected);
+    }
+    EXPECT_EQ(player.process_tick(), no_events);
+
+    // START ROW 2
+    // "Remember last setting"
+    EXPECT_EQ(player.process_tick(), volume_at_3_4ths);
+    EXPECT_EQ(player.process_tick(), no_events);
+
+    // START ROW 3
+    { // Initial note of "Fine Volume Slide" will already experience incerase
+        std::vector<Mixer::Event> expected{
+            {0, Channel::Event::SetNoteOn{8363.0, &mod->samples[0].sample}},
+            {0, Channel::Event::SetVolume{.5f + .125f}}};
+        EXPECT_EQ(player.process_tick(), expected);
+    }
+    EXPECT_EQ(player.process_tick(), no_events);
+
+    // START ROW 4
+    // "Remember last setting"
+    EXPECT_EQ(player.process_tick(), volume_at_3_4ths);
+    EXPECT_EQ(player.process_tick(), no_events);
 }
 
 TEST_F(PlayerNoteInterpretation, CanEmitVolumeChangeEvents)

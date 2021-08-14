@@ -164,6 +164,9 @@ parse_pattern_entry_effect(std::string::const_iterator& curr,
     case 'C':
         comm = PatternEntry::Command::break_to_row;
         break;
+    case 'D':
+        comm = PatternEntry::Command::volume_slide;
+        break;
     case 'T':
         comm = PatternEntry::Command::set_tempo;
         break;
