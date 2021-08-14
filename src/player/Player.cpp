@@ -2,6 +2,7 @@
 #include "Mixer.h"
 #include "Module.h"
 
+#include <algorithm>
 #include <iostream>
 
 Player::Player(const std::shared_ptr<Module>& mod)
@@ -83,6 +84,25 @@ const std::vector<Mixer::Event>& Player::process_tick()
 
     mixer_events.clear();
     if (--tick_counter > 0) {
+        auto channel_count =
+            module->patterns[module->patternOrder[current_order]]
+                .channel_count();
+        for (size_t i = 0; i < channel_count; ++i) {
+            auto& channel = channels[i];
+            auto last_volume = channel.volume;
+
+            channel.volume += channel.effects.volume_slide;
+
+            channel.volume = std::clamp(channel.volume, static_cast<int8_t>(0),
+                                        static_cast<int8_t>(64));
+            if (channel.volume != last_volume) {
+                mixer_events.push_back(
+                    {static_cast<size_t>(i),
+                     ::Channel::Event::SetVolume{
+                         static_cast<float>(channel.volume) / 64.0f}});
+            }
+        }
+
         return mixer_events;
     }
 
@@ -129,6 +149,7 @@ const std::vector<Mixer::Event>& Player::process_tick()
             break;
         }
 
+        channel.effects.volume_slide = 0;
         if (entry._effect.comm == PatternEntry::Command::volume_slide) {
             auto data = entry._effect.data
                             ? entry._effect.data
@@ -140,9 +161,18 @@ const std::vector<Mixer::Event>& Player::process_tick()
             } else if ((data & 0x0F) == 0x0F) {
                 // Fine slide up
                 channel.volume += data >> 4;
+            } else if ((data & 0x0F) && (data & 0xF0) == 0) {
+                // Slide down
+                channel.effects.volume_slide =
+                    -static_cast<int8_t>(data & 0x0F);
+            } else if ((data & 0xF0) && (data & 0x0F) == 0) {
+                // Slide up
+                channel.effects.volume_slide = static_cast<int8_t>((data >> 4));
             }
         }
 
+        channel.volume = std::clamp(channel.volume, static_cast<int8_t>(0),
+                                    static_cast<int8_t>(64));
         if (channel.volume != last_volume) {
             mixer_events.push_back(
                 {static_cast<size_t>(channel_index),

@@ -17,6 +17,10 @@ struct Player : public Mixer::TickHandler {
 
     struct Channel {
 
+        struct Effects {
+          int8_t volume_slide;
+        };
+
         struct EffectsMemory {
             uint8_t volume_slide;
         };
@@ -25,6 +29,7 @@ struct Player : public Mixer::TickHandler {
         PatternEntry::Note last_note;
         PatternEntry::Inst last_inst = 0;
 
+        Effects effects;
         EffectsMemory effects_memory;
 
       public:

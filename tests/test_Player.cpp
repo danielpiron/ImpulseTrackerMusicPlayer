@@ -50,6 +50,8 @@ class PlayerTest : public ::testing::Test {
         mod->samples.emplace_back(Sample{{0.5f, 1.0f, 0.5f, 1.0f}, 8363 * 2});
     }
     void TearDown() override { mod = nullptr; }
+
+    const std::vector<Mixer::Event> no_events{};
     std::shared_ptr<Module> mod;
 };
 
@@ -86,7 +88,6 @@ TEST_F(PlayerGlobalEffects, CanHandleSetSpeedCommand)
                                  ... .. 00 ...)",
                               mod->patterns[0]));
 
-    const std::vector<Mixer::Event> no_events{};
     const std::vector<Mixer::Event> volume_to_zero{
         {0, Channel::Event::SetVolume{0}}};
     const std::vector<Mixer::Event> volume_to_half{
@@ -143,7 +144,6 @@ TEST_F(PlayerChannelEffects, CanHandleFineVolumeSlide)
 {
     const std::vector<Mixer::Event> volume_at_3_4ths{
         {0, Channel::Event::SetVolume{0.75f}}};
-    const std::vector<Mixer::Event> no_events{};
 
     ASSERT_TRUE(parse_pattern(R"(C-5 01 64 DF8
                                  ... .. .. D00
@@ -180,6 +180,71 @@ TEST_F(PlayerChannelEffects, CanHandleFineVolumeSlide)
     // "Remember last setting"
     EXPECT_EQ(player.process_tick(), volume_at_3_4ths);
     EXPECT_EQ(player.process_tick(), no_events);
+}
+
+TEST_F(PlayerChannelEffects, CanHandleVolumeSlide)
+{
+    // Slide memory is already proven by fine slide, so we'll stick with
+    // the inter row events.
+    ASSERT_TRUE(parse_pattern(R"(C-5 01 64 D08
+                                 ... .. .. .00
+                                 C-5 01 32 D80)",
+                              mod->patterns[0]));
+    // Set speed to 3. We want two ticks of change.
+    mod->initial_speed = 3;
+    Player player(mod);
+
+    player.process_tick();
+    EXPECT_EQ(player.channels[0].volume, 64);
+    player.process_tick();
+    EXPECT_EQ(player.channels[0].volume, 56);
+    player.process_tick();
+    EXPECT_EQ(player.channels[0].volume, 48);
+
+    // Intervening row should have no events for 3 ticks
+    EXPECT_EQ(player.process_tick(), no_events);
+    EXPECT_EQ(player.process_tick(), no_events);
+    EXPECT_EQ(player.process_tick(), no_events);
+
+    player.process_tick();
+    EXPECT_EQ(player.channels[0].volume, 32);
+    player.process_tick();
+    EXPECT_EQ(player.channels[0].volume, 40);
+    player.process_tick();
+    EXPECT_EQ(player.channels[0].volume, 48);
+}
+
+TEST_F(PlayerChannelEffects, VolumeRangeIsClamped)
+{
+    ASSERT_TRUE(parse_pattern(R"(C-5 01 66 D8F
+                                 ... .. 62 D80
+                                 C-5 01 02 D08
+                                 ... .. .. DF8)",
+                              mod->patterns[0]));
+
+    mod->initial_speed = 2;
+    Player player(mod);
+    // START ROW 1
+    player.process_tick();
+    EXPECT_EQ(player.channels[0].volume, 64);
+    EXPECT_EQ(player.process_tick(),
+              no_events); // No events as we have clamped to 64
+    player.process_tick();
+
+    // START ROW 2
+    EXPECT_EQ(player.channels[0].volume, 62);
+    player.process_tick();
+    EXPECT_EQ(player.channels[0].volume, 64);
+    player.process_tick();
+
+    // START ROW 3
+    EXPECT_EQ(player.channels[0].volume, 2);
+    player.process_tick();
+    EXPECT_EQ(player.channels[0].volume, 0);
+
+    // START ROW 4
+    player.process_tick();
+    EXPECT_EQ(player.channels[0].volume, 0);
 }
 
 TEST_F(PlayerNoteInterpretation, CanEmitVolumeChangeEvents)
