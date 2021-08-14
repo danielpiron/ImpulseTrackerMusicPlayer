@@ -78,18 +78,27 @@ TEST_F(PlayerGlobalEffects, CanInheritInitialSpeedFromModule)
 
 TEST_F(PlayerGlobalEffects, CanHandleSetSpeedCommand)
 {
-    mod->patterns.resize(1, Pattern(8));
-    mod->patternOrder = {0, 255};
-
-    ASSERT_TRUE(parse_pattern(R"(... .. .. .00
-                                 ... .. .. A06)",
+    ASSERT_TRUE(parse_pattern(R"(... .. 00 A02
+                                 ... .. 32 A03
+                                 ... .. 00 ...)",
                               mod->patterns[0]));
+
+    const std::vector<Mixer::Event> no_events{};
+    const std::vector<Mixer::Event> volume_to_zero{
+        {0, Channel::Event::SetVolume{0}}};
+    const std::vector<Mixer::Event> volume_to_half{
+        {0, Channel::Event::SetVolume{0.5}}};
+
     Player player(mod);
 
-    player.process_tick();
-    EXPECT_EQ(player.speed, mod->initial_speed);
-    player.process_tick();
-    EXPECT_EQ(player.speed, 6);
+    EXPECT_EQ(player.process_tick(), volume_to_zero);
+    ASSERT_EQ(player.speed, 2);
+    EXPECT_EQ(player.process_tick(), no_events);
+    EXPECT_EQ(player.process_tick(), volume_to_half);
+    ASSERT_EQ(player.speed, 3);
+    EXPECT_EQ(player.process_tick(), no_events);
+    EXPECT_EQ(player.process_tick(), no_events);
+    EXPECT_EQ(player.process_tick(), volume_to_zero);
 }
 
 TEST_F(PlayerGlobalEffects, CanHandleJumpToOrderCommand)

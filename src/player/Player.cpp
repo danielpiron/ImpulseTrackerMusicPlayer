@@ -87,7 +87,6 @@ const std::vector<Mixer::Event>& Player::process_tick()
     }
 
     int channel_index = 0;
-    tick_counter = speed;
     for (const auto& entry : next_row()) {
         process_global_command(entry._effect);
 
@@ -138,5 +137,6 @@ const std::vector<Mixer::Event>& Player::process_tick()
         }
         channel_index++;
     }
+    tick_counter = speed;
     return mixer_events;
 }

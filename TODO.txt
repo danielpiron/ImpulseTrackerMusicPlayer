@@ -2,4 +2,8 @@
     [X] When a note is played without an explicit volume,
         the channel volume is set to the sample's "default"
 [X] Handle multiple channels in a pattern.
+[X] Correct handling of "set speed"
 [ ] Implement volume slide effect.
+[ ] Implement pitch slide (slide up, slide down, portamento)
+[ ] Fix iterator related bugs in parsing patterns (Manifested on Windows)
+[ ] Fix empty sample loading bug (Manifested on Windows)
