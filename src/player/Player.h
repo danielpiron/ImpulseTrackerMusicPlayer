@@ -18,7 +18,7 @@ struct Player : public Mixer::TickHandler {
     struct Channel {
 
         struct Effects {
-          int8_t volume_slide;
+            int8_t volume_slide;
         };
 
         struct EffectsMemory {
@@ -37,8 +37,6 @@ struct Player : public Mixer::TickHandler {
     };
 
     Player(const std::shared_ptr<Module>& mod);
-
-    const std::vector<PatternEntry>& next_row();
 
     void render_audio(float*, int);
     void process_global_command(const PatternEntry::Effect& effect);

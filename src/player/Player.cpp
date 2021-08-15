@@ -26,30 +26,6 @@ void Player::onTick(Mixer& audio)
     }
 }
 
-const std::vector<PatternEntry>& Player::next_row()
-{
-    static std::vector<PatternEntry> row;
-
-    const auto& current_pattern =
-        module->patterns[module->patternOrder[current_order]];
-
-    row.clear();
-    for (size_t i = 0; i < current_pattern.channel_count(); ++i) {
-        row.push_back(current_pattern.channel(i).row(current_row));
-    }
-
-    if (++current_row == current_pattern.row_count()) {
-        current_order++;
-        // TODO: End of order value 255 needs a name
-        if (module->patternOrder[current_order] == 255) {
-            current_order = 0;
-        }
-        current_row = 0;
-    }
-
-    return row;
-}
-
 void Player::render_audio(float* buffer, int framesToRender)
 {
     _mixer.render(buffer, static_cast<size_t>(framesToRender));
@@ -60,6 +36,7 @@ void Player::process_global_command(const PatternEntry::Effect& effect)
     switch (effect.comm) {
     case PatternEntry::Command::set_speed:
         speed = effect.data;
+        tick_counter = speed;
         break;
     case PatternEntry::Command::jump_to_order:
         current_order = effect.data;
@@ -77,98 +54,106 @@ void Player::process_global_command(const PatternEntry::Effect& effect)
     }
 }
 
+static void update_effects(Player::Channel& channel)
+{
+    channel.volume += channel.effects.volume_slide;
+}
+
 const std::vector<Mixer::Event>& Player::process_tick()
 {
     static const int note_periods[] = {1712, 1616, 1524, 1440, 1356, 1280,
                                        1208, 1140, 1076, 1016, 960,  907};
 
     mixer_events.clear();
-    if (--tick_counter > 0) {
-        auto channel_count =
-            module->patterns[module->patternOrder[current_order]]
-                .channel_count();
-        for (size_t i = 0; i < channel_count; ++i) {
-            auto& channel = channels[i];
-            auto last_volume = channel.volume;
+    const auto& current_pattern =
+        module->patterns[module->patternOrder[current_order]];
 
-            channel.volume += channel.effects.volume_slide;
-
-            channel.volume = std::clamp(channel.volume, static_cast<int8_t>(0),
-                                        static_cast<int8_t>(64));
-            if (channel.volume != last_volume) {
-                mixer_events.push_back(
-                    {static_cast<size_t>(i),
-                     ::Channel::Event::SetVolume{
-                         static_cast<float>(channel.volume) / 64.0f}});
+    auto process_row = current_row;
+    bool initial_tick = false;
+    if (--tick_counter == 0) {
+        tick_counter = speed;
+        if (++current_row ==
+            module->patterns[module->patternOrder[current_order]].row_count()) {
+            current_order++;
+            // TODO: End of order value 255 needs a name
+            if (module->patternOrder[current_order] == 255) {
+                current_order = 0;
             }
+            current_row = 0;
         }
-
-        return mixer_events;
+        initial_tick = true;
     }
 
-    int channel_index = 0;
-    for (const auto& entry : next_row()) {
-        process_global_command(entry._effect);
-
+    for (size_t channel_index = 0;
+         channel_index < current_pattern.channel_count(); ++channel_index) {
         auto& channel = channels[static_cast<size_t>(channel_index)];
         auto last_volume = channel.volume;
 
-        bool candidate_note = false;
-        if (!entry._note.is_empty()) {
-            channel.last_note = entry._note;
-            candidate_note = true;
-        }
-        if (entry._inst) {
-            channel.last_inst = entry._inst;
-            candidate_note = true;
-        }
+        if (initial_tick) {
+            const auto& entry =
+                current_pattern.channel(channel_index).row(process_row);
+            process_global_command(entry._effect);
 
-        if (candidate_note && channel.last_note.is_playable() &&
-            channel.last_inst) {
-            auto note_st3period =
-                ((8363 * 32 * note_periods[channel.last_note.index()]) >>
-                 channel.last_note.octave()) /
-                static_cast<int>(module->samples[channel.last_inst - 1]
-                                     .sample.playbackRate());
-            auto playback_frequency = 14317456 / note_st3period;
-
-            channel.volume =
-                module->samples[channel.last_inst - 1].default_volume;
-            mixer_events.push_back(
-                {static_cast<size_t>(channel_index),
-                 ::Channel::Event::SetNoteOn{
-                     static_cast<float>(playback_frequency),
-                     &(module->samples[channel.last_inst - 1].sample)}});
-        }
-
-        switch (entry._volume_effect.comm) {
-        case PatternEntry::Command::set_volume:
-            channel.volume = static_cast<int8_t>(entry._volume_effect.data);
-            break;
-        default:
-            break;
-        }
-
-        channel.effects.volume_slide = 0;
-        if (entry._effect.comm == PatternEntry::Command::volume_slide) {
-            auto data = entry._effect.data
-                            ? entry._effect.data
-                            : channel.effects_memory.volume_slide;
-            channel.effects_memory.volume_slide = data;
-            if ((data & 0xF0) == 0xF0) {
-                // Fine slide down
-                channel.volume -= data & 0x0F;
-            } else if ((data & 0x0F) == 0x0F) {
-                // Fine slide up
-                channel.volume += data >> 4;
-            } else if ((data & 0x0F) && (data & 0xF0) == 0) {
-                // Slide down
-                channel.effects.volume_slide =
-                    -static_cast<int8_t>(data & 0x0F);
-            } else if ((data & 0xF0) && (data & 0x0F) == 0) {
-                // Slide up
-                channel.effects.volume_slide = static_cast<int8_t>((data >> 4));
+            bool candidate_note = false;
+            if (!entry._note.is_empty()) {
+                channel.last_note = entry._note;
+                candidate_note = true;
             }
+            if (entry._inst) {
+                channel.last_inst = entry._inst;
+                candidate_note = true;
+            }
+
+            if (candidate_note && channel.last_note.is_playable() &&
+                channel.last_inst) {
+                auto note_st3period =
+                    ((8363 * 32 * note_periods[channel.last_note.index()]) >>
+                     channel.last_note.octave()) /
+                    static_cast<int>(module->samples[channel.last_inst - 1]
+                                         .sample.playbackRate());
+                auto playback_frequency = 14317456 / note_st3period;
+
+                channel.volume =
+                    module->samples[channel.last_inst - 1].default_volume;
+                mixer_events.push_back(
+                    {static_cast<size_t>(channel_index),
+                     ::Channel::Event::SetNoteOn{
+                         static_cast<float>(playback_frequency),
+                         &(module->samples[channel.last_inst - 1].sample)}});
+            }
+
+            switch (entry._volume_effect.comm) {
+            case PatternEntry::Command::set_volume:
+                channel.volume = static_cast<int8_t>(entry._volume_effect.data);
+                break;
+            default:
+                break;
+            }
+
+            channel.effects.volume_slide = 0;
+            if (entry._effect.comm == PatternEntry::Command::volume_slide) {
+                auto data = entry._effect.data
+                                ? entry._effect.data
+                                : channel.effects_memory.volume_slide;
+                channel.effects_memory.volume_slide = data;
+                if ((data & 0xF0) == 0xF0) {
+                    // Fine slide down
+                    channel.volume -= data & 0x0F;
+                } else if ((data & 0x0F) == 0x0F) {
+                    // Fine slide up
+                    channel.volume += data >> 4;
+                } else if ((data & 0x0F) && (data & 0xF0) == 0) {
+                    // Slide down
+                    channel.effects.volume_slide =
+                        -static_cast<int8_t>(data & 0x0F);
+                } else if ((data & 0xF0) && (data & 0x0F) == 0) {
+                    // Slide up
+                    channel.effects.volume_slide =
+                        static_cast<int8_t>((data >> 4));
+                }
+            }
+        } else {
+            update_effects(channel);
         }
 
         channel.volume = std::clamp(channel.volume, static_cast<int8_t>(0),
@@ -179,8 +164,7 @@ const std::vector<Mixer::Event>& Player::process_tick()
                  ::Channel::Event::SetVolume{
                      static_cast<float>(channel.volume) / 64.0f}});
         }
-        channel_index++;
     }
-    tick_counter = speed;
+
     return mixer_events;
 }
