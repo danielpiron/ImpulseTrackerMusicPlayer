@@ -114,6 +114,8 @@ void Player::process_initial_tick(Player::Channel& channel, const PatternEntry& 
         channel.effects_memory.pitch_slide = data;
         if ((data & 0xF0) == 0xE0) {
             channel.period -= (data & 0x0F);
+        } else if ((data & 0xF0) == 0xF0) {
+            channel.period -= (data & 0x0F) * 4;
         }
     }
 }
