@@ -33,6 +33,8 @@ struct Player : public Mixer::TickHandler {
         EffectsMemory effects_memory;
 
       public:
+        bool note_on = false;
+        int period;
         int8_t volume = 64;
     };
 
@@ -40,6 +42,8 @@ struct Player : public Mixer::TickHandler {
 
     void render_audio(float*, int);
     void process_global_command(const PatternEntry::Effect& effect);
+    void process_initial_tick(Player::Channel& channel,
+                              const PatternEntry& entry);
 
     const std::vector<Mixer::Event>& process_tick();
 
