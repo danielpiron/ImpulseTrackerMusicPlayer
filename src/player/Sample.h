@@ -27,15 +27,15 @@ class Sample {
     template <typename Iterator>
     Sample(Iterator b, Iterator e, size_t playbackRate, LoopParams loopParams = LoopParams())
         : _data(b, e),
-          _playbackRate(playbackRate), _loop{loopParams.type, loopParams.begin,
-                                             loopParams.end ? loopParams.end : _data.size()}
+          _playbackRate(playbackRate),
+          _loop{loopParams.type, loopParams.begin, loopParams.end ? loopParams.end : _data.size()}
     {
     }
     Sample(std::initializer_list<float> il, size_t playbackRate,
            LoopParams loopParams = LoopParams())
         : _data(il),
-          _playbackRate(playbackRate), _loop{loopParams.type, loopParams.begin,
-                                             loopParams.end ? loopParams.end : _data.size()}
+          _playbackRate(playbackRate),
+          _loop{loopParams.type, loopParams.begin, loopParams.end ? loopParams.end : _data.size()}
     {
     }
 

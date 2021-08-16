@@ -6,9 +6,16 @@
 #include <iostream>
 
 Player::Player(const std::shared_ptr<Module>& mod)
-    : module(std::const_pointer_cast<const Module>(mod)), speed(mod->initial_speed),
-      tempo(mod->initial_tempo), tick_counter(1), break_row(0), current_row(0), current_order(0),
-      process_row(0), channels(32), _mixer(44100, 16)
+    : module(std::const_pointer_cast<const Module>(mod)),
+      speed(mod->initial_speed),
+      tempo(mod->initial_tempo),
+      tick_counter(1),
+      break_row(0),
+      current_row(0),
+      current_order(0),
+      process_row(0),
+      channels(32),
+      _mixer(44100, 16)
 {
     _mixer.attach_handler(this);
 }
