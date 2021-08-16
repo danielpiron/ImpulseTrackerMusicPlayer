@@ -280,6 +280,40 @@ TEST_F(PlayerChannelEffects, CanPitchSlideDownFine)
     EXPECT_EQ(player.channels[0].period, 1712 + 24);
 }
 
+TEST_F(PlayerChannelEffects, CanPitchSlideDown)
+{
+    ASSERT_TRUE(parse_pattern(R"(C-5 01 .. E03
+                                 ... .. .. E00
+                                 ... .. .. .00)",
+                              mod->patterns[0]));
+    mod->initial_speed = 3;
+    Player player(mod);
+
+    // Down pitch slide to 3 (which lowers by 3 * 4)
+    player.process_tick();
+    EXPECT_EQ(player.channels[0].period, 1712);
+    ASSERT_NE(player.process_tick(), no_events);
+    EXPECT_EQ(player.channels[0].period, 1712 + 12);
+    ASSERT_NE(player.process_tick(), no_events);
+    EXPECT_EQ(player.channels[0].period, 1712 + 24);
+    // Cotinue using pitch slide memory
+    ASSERT_EQ(player.process_tick(), no_events);
+    EXPECT_EQ(player.channels[0].period, 1712 + 24);
+    ASSERT_NE(player.process_tick(), no_events);
+    EXPECT_EQ(player.channels[0].period, 1712 + 36);
+    ASSERT_NE(player.process_tick(), no_events);
+    EXPECT_EQ(player.channels[0].period, 1712 + 48);
+
+    // Finally, ensure pitch slide has been turned off,
+    // and period remains as we last left it
+    ASSERT_EQ(player.process_tick(), no_events);
+    EXPECT_EQ(player.channels[0].period, 1712 + 48);
+    ASSERT_EQ(player.process_tick(), no_events);
+    EXPECT_EQ(player.channels[0].period, 1712 + 48);
+    ASSERT_EQ(player.process_tick(), no_events);
+    EXPECT_EQ(player.channels[0].period, 1712 + 48);
+}
+
 TEST_F(PlayerNoteInterpretation, CanEmitVolumeChangeEvents)
 {
     ASSERT_TRUE(parse_pattern(R"(... .. 00 .00

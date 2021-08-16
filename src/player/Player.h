@@ -19,6 +19,7 @@ struct Player : public Mixer::TickHandler {
 
         struct Effects {
             int8_t volume_slide;
+            int8_t pitch_slide;
         };
 
         struct EffectsMemory {

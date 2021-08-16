@@ -93,6 +93,7 @@ void Player::process_initial_tick(Player::Channel& channel, const PatternEntry& 
     }
 
     channel.effects.volume_slide = 0;
+    channel.effects.pitch_slide = 0;
     if (entry._effect.comm == PatternEntry::Command::volume_slide) {
         auto data = entry._effect.data ? entry._effect.data : channel.effects_memory.volume_slide;
         channel.effects_memory.volume_slide = data;
@@ -116,6 +117,8 @@ void Player::process_initial_tick(Player::Channel& channel, const PatternEntry& 
             channel.period += (data & 0x0F);
         } else if ((data & 0xF0) == 0xF0) {
             channel.period += (data & 0x0F) * 4;
+        } else {
+            channel.effects.pitch_slide = static_cast<int8_t>(data * 4);
         }
     }
 }
@@ -123,6 +126,7 @@ void Player::process_initial_tick(Player::Channel& channel, const PatternEntry& 
 static void update_effects(Player::Channel& channel)
 {
     channel.volume += channel.effects.volume_slide;
+    channel.period += channel.effects.pitch_slide;
 }
 
 const std::vector<Mixer::Event>& Player::process_tick()
