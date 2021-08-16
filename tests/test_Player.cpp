@@ -248,10 +248,16 @@ TEST_F(PlayerChannelEffects, CanPitchSlideDownExtraFine)
     mod->initial_speed = 2;
     Player player(mod);
 
-    player.process_tick();
-    EXPECT_EQ(player.channels[0].period, 1712 - 3);
-    player.process_tick();
-    EXPECT_EQ(player.channels[0].period, 1712 - 3);
+    // ROW 1
+    EXPECT_NE(player.process_tick(), no_events);
+    EXPECT_EQ(player.channels[0].period, 1712 + 3);
+    EXPECT_EQ(player.process_tick(), no_events);
+    EXPECT_EQ(player.channels[0].period, 1712 + 3);
+    // ROW 2
+    EXPECT_NE(player.process_tick(), no_events);
+    EXPECT_EQ(player.channels[0].period, 1712 + 6);
+    EXPECT_EQ(player.process_tick(), no_events);
+    EXPECT_EQ(player.channels[0].period, 1712 + 6);
 }
 
 TEST_F(PlayerChannelEffects, CanPitchSlideDownFine)
@@ -262,10 +268,16 @@ TEST_F(PlayerChannelEffects, CanPitchSlideDownFine)
     mod->initial_speed = 2;
     Player player(mod);
 
-    player.process_tick();
-    EXPECT_EQ(player.channels[0].period, 1712 - 12);
-    player.process_tick();
-    EXPECT_EQ(player.channels[0].period, 1712 - 12);
+    // ROW 1
+    EXPECT_NE(player.process_tick(), no_events);
+    EXPECT_EQ(player.channels[0].period, 1712 + 12);
+    EXPECT_EQ(player.process_tick(), no_events);
+    EXPECT_EQ(player.channels[0].period, 1712 + 12);
+    // ROW 2
+    EXPECT_NE(player.process_tick(), no_events);
+    EXPECT_EQ(player.channels[0].period, 1712 + 24);
+    EXPECT_EQ(player.process_tick(), no_events);
+    EXPECT_EQ(player.channels[0].period, 1712 + 24);
 }
 
 TEST_F(PlayerNoteInterpretation, CanEmitVolumeChangeEvents)

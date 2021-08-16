@@ -113,9 +113,9 @@ void Player::process_initial_tick(Player::Channel& channel, const PatternEntry& 
         auto data = entry._effect.data ? entry._effect.data : channel.effects_memory.pitch_slide;
         channel.effects_memory.pitch_slide = data;
         if ((data & 0xF0) == 0xE0) {
-            channel.period -= (data & 0x0F);
+            channel.period += (data & 0x0F);
         } else if ((data & 0xF0) == 0xF0) {
-            channel.period -= (data & 0x0F) * 4;
+            channel.period += (data & 0x0F) * 4;
         }
     }
 }
@@ -156,6 +156,10 @@ const std::vector<Mixer::Event>& Player::process_tick()
                                             static_cast<float>(playback_frequency),
                                             &(module->samples[channel.last_inst - 1].sample)}});
                 channel.note_on = false;
+            } else {
+                mixer_events.push_back(
+                    {static_cast<size_t>(channel_index),
+                     ::Channel::Event::SetFrequency{static_cast<float>(playback_frequency)}});
             }
         }
 
