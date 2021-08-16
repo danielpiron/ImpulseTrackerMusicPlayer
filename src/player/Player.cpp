@@ -120,6 +120,16 @@ void Player::process_initial_tick(Player::Channel& channel, const PatternEntry& 
         } else {
             channel.effects.pitch_slide = static_cast<int8_t>(data * 4);
         }
+    } else if (entry._effect.comm == PatternEntry::Command::pitch_slide_up) {
+        auto data = entry._effect.data ? entry._effect.data : channel.effects_memory.pitch_slide;
+        channel.effects_memory.pitch_slide = data;
+        if ((data & 0xF0) == 0xE0) {
+            channel.period -= (data & 0x0F);
+        } else if ((data & 0xF0) == 0xF0) {
+            channel.period -= (data & 0x0F) * 4;
+        } else {
+            channel.effects.pitch_slide = -static_cast<int8_t>(data * 4);
+        }
     }
 }
 
