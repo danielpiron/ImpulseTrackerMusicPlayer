@@ -240,6 +240,20 @@ TEST_F(PlayerChannelEffects, VolumeRangeIsClamped)
     EXPECT_EQ(player.channels[0].volume, 0);
 }
 
+TEST_F(PlayerChannelEffects, CanPitchSlideDownExtraFine)
+{
+    ASSERT_TRUE(parse_pattern(R"(C-5 01 .. EE3
+                                 ... .. .. E00)",
+                              mod->patterns[0]));
+    mod->initial_speed = 2;
+    Player player(mod);
+
+    player.process_tick();
+    EXPECT_EQ(player.channels[0].period, 1712 - 3);
+    player.process_tick();
+    EXPECT_EQ(player.channels[0].period, 1712 - 3);
+}
+
 TEST_F(PlayerNoteInterpretation, CanEmitVolumeChangeEvents)
 {
     ASSERT_TRUE(parse_pattern(R"(... .. 00 .00

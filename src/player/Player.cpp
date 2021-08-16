@@ -109,6 +109,12 @@ void Player::process_initial_tick(Player::Channel& channel, const PatternEntry& 
             // Slide up
             channel.effects.volume_slide = static_cast<int8_t>((data >> 4));
         }
+    } else if (entry._effect.comm == PatternEntry::Command::pitch_slide_down) {
+        auto data = entry._effect.data ? entry._effect.data : channel.effects_memory.pitch_slide;
+        channel.effects_memory.pitch_slide = data;
+        if ((data & 0xF0) == 0xE0) {
+            channel.period -= (data & 0x0F);
+        }
     }
 }
 

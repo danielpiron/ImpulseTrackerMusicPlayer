@@ -162,6 +162,9 @@ static PatternEntry::Effect parse_pattern_entry_effect(std::string::const_iterat
     case 'D':
         comm = PatternEntry::Command::volume_slide;
         break;
+    case 'E':
+        comm = PatternEntry::Command::pitch_slide_down;
+        break;
     case 'T':
         comm = PatternEntry::Command::set_tempo;
         break;
