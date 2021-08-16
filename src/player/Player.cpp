@@ -8,7 +8,8 @@
 Player::Player(const std::shared_ptr<Module>& mod)
     : module(std::const_pointer_cast<const Module>(mod)),
       speed(mod->initial_speed), tempo(mod->initial_tempo), tick_counter(1),
-      current_row(0), current_order(0), channels(32), _mixer(44100, 16)
+      break_row(0), current_row(0), current_order(0), process_row(0),
+      channels(32), _mixer(44100, 16)
 {
     _mixer.attach_handler(this);
 }
@@ -39,12 +40,12 @@ void Player::process_global_command(const PatternEntry::Effect& effect)
         tick_counter = speed;
         break;
     case PatternEntry::Command::jump_to_order:
-        current_order = effect.data;
-        current_row = 0;
+        current_order = effect.data - 1;
+        process_row = 0xFFFE;
         break;
     case PatternEntry::Command::break_to_row:
-        current_order++;
-        current_row = effect.data;
+        process_row = 0xFFFE;
+        break_row = effect.data;
         break;
     case PatternEntry::Command::set_tempo:
         tempo = effect.data;
@@ -65,25 +66,11 @@ const std::vector<Mixer::Event>& Player::process_tick()
                                        1208, 1140, 1076, 1016, 960,  907};
 
     mixer_events.clear();
+
+    bool initial_tick = --tick_counter == 0;
+
     const auto& current_pattern =
         module->patterns[module->patternOrder[current_order]];
-
-    auto process_row = current_row;
-    bool initial_tick = false;
-    if (--tick_counter == 0) {
-        tick_counter = speed;
-        if (++current_row ==
-            module->patterns[module->patternOrder[current_order]].row_count()) {
-            current_order++;
-            // TODO: End of order value 255 needs a name
-            if (module->patternOrder[current_order] == 255) {
-                current_order = 0;
-            }
-            current_row = 0;
-        }
-        initial_tick = true;
-    }
-
     for (size_t channel_index = 0;
          channel_index < current_pattern.channel_count(); ++channel_index) {
         auto& channel = channels[static_cast<size_t>(channel_index)];
@@ -91,7 +78,7 @@ const std::vector<Mixer::Event>& Player::process_tick()
 
         if (initial_tick) {
             const auto& entry =
-                current_pattern.channel(channel_index).row(process_row);
+                current_pattern.channel(channel_index).row(current_row);
             process_global_command(entry._effect);
 
             bool candidate_note = false;
@@ -164,6 +151,23 @@ const std::vector<Mixer::Event>& Player::process_tick()
                  ::Channel::Event::SetVolume{
                      static_cast<float>(channel.volume) / 64.0f}});
         }
+    }
+
+    if (initial_tick) {
+        tick_counter = speed;
+        if (process_row == 0xFFFE ||
+            ++process_row >=
+                module->patterns[module->patternOrder[current_order]]
+                    .row_count()) {
+            current_order++;
+            // TODO: End of order value 255 needs a name
+            if (module->patternOrder[current_order] == 255) {
+                current_order = 0;
+            }
+            process_row = break_row;
+            break_row = 0;
+        }
+        current_row = process_row;
     }
 
     return mixer_events;

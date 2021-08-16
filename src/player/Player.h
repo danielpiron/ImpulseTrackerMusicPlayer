@@ -49,8 +49,10 @@ struct Player : public Mixer::TickHandler {
     int speed;
     int tempo;
     int tick_counter;
+    size_t break_row;
     size_t current_row;
     size_t current_order;
+    size_t process_row;
     std::vector<Channel> channels;
     std::vector<Mixer::Event> mixer_events;
 
