@@ -25,15 +25,11 @@ class Mixer {
     };
 
     Mixer(const unsigned int sample_rate_ = 1, const size_t channel_count = 1)
-        : _sample_rate(sample_rate_), _auxilliary_buffer(1024),
-          _channels(channel_count)
+        : _sample_rate(sample_rate_), _auxilliary_buffer(1024), _channels(channel_count)
     {
     }
 
-    void process_event(const Event& event)
-    {
-        channel(event.channel).process_event(event.action);
-    }
+    void process_event(const Event& event) { channel(event.channel).process_event(event.action); }
 
     void attach_handler(TickHandler* handler)
     {
@@ -52,14 +48,12 @@ class Mixer {
                 _samples_until_next_tick = _samples_per_tick;
             }
 
-            auto samples_to_render =
-                std::min(_samples_until_next_tick, samplesToFill);
+            auto samples_to_render = std::min(_samples_until_next_tick, samplesToFill);
 
             samplesToFill -= samples_to_render;
             _samples_until_next_tick -= samples_to_render;
             for (auto& channel : _channels) {
-                channel.render(&_auxilliary_buffer[0], samples_to_render,
-                               _sample_rate);
+                channel.render(&_auxilliary_buffer[0], samples_to_render, _sample_rate);
                 for (size_t i = 0; i < samples_to_render; ++i) {
                     outputBuffer[i] += _auxilliary_buffer[i];
                 }

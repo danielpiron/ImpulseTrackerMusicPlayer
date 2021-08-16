@@ -89,9 +89,8 @@ TEST(ParsePatternsFromText, CanParseInstrument)
 
 TEST(ParsePatternsFromText, CanParseSetVolume)
 {
-    PatternEntry set_volume64(
-        PatternEntry::Note(PatternEntry::Note::Type::empty), 0,
-        {PatternEntry::Command::set_volume, 64});
+    PatternEntry set_volume64(PatternEntry::Note(PatternEntry::Note::Type::empty), 0,
+                              {PatternEntry::Command::set_volume, 64});
 
     EXPECT_EQ(parse_pattern_entry("... .. 64 .00"), set_volume64);
 }
@@ -120,10 +119,8 @@ TEST(ParsePatternsFromText, CanParseSingleEntry)
     Pattern expected(4);
     Pattern result(4);
 
-    expected.channel(0).row(0) = {PatternEntry::Note{0, 4},
-                                  0,
-                                  PatternEntry::Effect(),
-                                  {PatternEntry::Command::set_speed, 6}};
+    expected.channel(0).row(0) = {
+        PatternEntry::Note{0, 4}, 0, PatternEntry::Effect(), {PatternEntry::Command::set_speed, 6}};
 
     ASSERT_TRUE(parse_pattern("C-4 .. .. A06", result));
     EXPECT_EQ(result, expected);
@@ -136,14 +133,10 @@ TEST(ParsePatternsFromText, CanParseSingleChannel)
     Pattern expected(8);
     Pattern result(8);
 
-    expected.channel(0).row(0) = {PatternEntry::Note{NoteName::c_natural, 4},
-                                  1};
-    expected.channel(0).row(2) = {PatternEntry::Note{NoteName::e_natural, 4},
-                                  1};
-    expected.channel(0).row(4) = {PatternEntry::Note{NoteName::g_natural, 4},
-                                  1};
-    expected.channel(0).row(6) = {PatternEntry::Note{NoteName::c_natural, 5},
-                                  1};
+    expected.channel(0).row(0) = {PatternEntry::Note{NoteName::c_natural, 4}, 1};
+    expected.channel(0).row(2) = {PatternEntry::Note{NoteName::e_natural, 4}, 1};
+    expected.channel(0).row(4) = {PatternEntry::Note{NoteName::g_natural, 4}, 1};
+    expected.channel(0).row(6) = {PatternEntry::Note{NoteName::c_natural, 5}, 1};
 
     auto text = R"(
     C-4 01 .. .00
@@ -165,14 +158,10 @@ TEST(ParsePatternsFromText, CanParseMultipleChannels)
     Pattern expected(8);
     Pattern result(8);
 
-    expected.channel(0).row(0) = {PatternEntry::Note{NoteName::c_natural, 4},
-                                  1};
-    expected.channel(1).row(0) = {PatternEntry::Note{NoteName::e_natural, 4},
-                                  1};
-    expected.channel(1).row(1) = {PatternEntry::Note{NoteName::g_natural, 4},
-                                  1};
-    expected.channel(0).row(2) = {PatternEntry::Note{NoteName::c_natural, 5},
-                                  1};
+    expected.channel(0).row(0) = {PatternEntry::Note{NoteName::c_natural, 4}, 1};
+    expected.channel(1).row(0) = {PatternEntry::Note{NoteName::e_natural, 4}, 1};
+    expected.channel(1).row(1) = {PatternEntry::Note{NoteName::g_natural, 4}, 1};
+    expected.channel(0).row(2) = {PatternEntry::Note{NoteName::c_natural, 5}, 1};
 
     auto text = R"(
     C-4 01 .. .00 E-4 01 .. .00

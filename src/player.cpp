@@ -7,10 +7,8 @@
 #include <iostream>
 #include <vector>
 
-static int patestCallback(const void*, void* outputBuffer,
-                          unsigned long framesPerBuffer,
-                          const PaStreamCallbackTimeInfo*,
-                          PaStreamCallbackFlags, void* userData)
+static int patestCallback(const void*, void* outputBuffer, unsigned long framesPerBuffer,
+                          const PaStreamCallbackTimeInfo*, PaStreamCallbackFlags, void* userData)
 {
     auto player = reinterpret_cast<Player*>(userData);
     auto pOut = reinterpret_cast<float*>(outputBuffer);
@@ -25,19 +23,16 @@ static void StreamFinished(void* userData)
     std::cout << "Stream complete" << std::endl;
 }
 
-static Module::Sample generateSinewave(int sampling_rate,
-                                       float target_frequency = 523.25f)
+static Module::Sample generateSinewave(int sampling_rate, float target_frequency = 523.25f)
 {
-    std::vector<float> sampleData(
-        static_cast<size_t>(static_cast<float>(sampling_rate) /
-                            static_cast<float>(target_frequency)));
+    std::vector<float> sampleData(static_cast<size_t>(static_cast<float>(sampling_rate) /
+                                                      static_cast<float>(target_frequency)));
     for (size_t i = 0; i < sampleData.size(); ++i) {
-        sampleData[i] =
-            static_cast<float>(sin(M_PI * 2.0 * static_cast<double>(i) /
-                                   static_cast<double>(sampleData.size())));
+        sampleData[i] = static_cast<float>(
+            sin(M_PI * 2.0 * static_cast<double>(i) / static_cast<double>(sampleData.size())));
     }
-    return Module::Sample(Sample(sampleData.begin(), sampleData.end(),
-                                 static_cast<size_t>(sampling_rate)));
+    return Module::Sample(
+        Sample(sampleData.begin(), sampleData.end(), static_cast<size_t>(sampling_rate)));
 }
 
 int main()
@@ -88,9 +83,8 @@ int main()
     Player player(mod);
 
     PaStream* stream = nullptr;
-    err = Pa_OpenStream(&stream, NULL, &outputParameters, 44100,
-                        paFramesPerBufferUnspecified, paClipOff, patestCallback,
-                        reinterpret_cast<void*>(&player));
+    err = Pa_OpenStream(&stream, NULL, &outputParameters, 44100, paFramesPerBufferUnspecified,
+                        paClipOff, patestCallback, reinterpret_cast<void*>(&player));
     if (err != paNoError) {
         std::cerr << "Error opening stream" << std::endl;
         return 1;

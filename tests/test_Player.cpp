@@ -22,13 +22,9 @@ std::ostream& operator<<(std::ostream& os, const Channel::Event::Action& action)
         }
         void operator()(const Channel::Event::SetNoteOn& no)
         {
-            os << "set note on (frequency: " << no.frequency
-               << ", sample: " << no.sample;
+            os << "set note on (frequency: " << no.frequency << ", sample: " << no.sample;
         }
-        void operator()(const Channel::Event::SetVolume& v)
-        {
-            os << "set volume to " << v.volume;
-        }
+        void operator()(const Channel::Event::SetVolume& v) { os << "set volume to " << v.volume; }
         std::ostream& os;
     };
 
@@ -88,10 +84,8 @@ TEST_F(PlayerGlobalEffects, CanHandleSetSpeedCommand)
                                  ... .. 00 ...)",
                               mod->patterns[0]));
 
-    const std::vector<Mixer::Event> volume_to_zero{
-        {0, Channel::Event::SetVolume{0}}};
-    const std::vector<Mixer::Event> volume_to_half{
-        {0, Channel::Event::SetVolume{0.5}}};
+    const std::vector<Mixer::Event> volume_to_zero{{0, Channel::Event::SetVolume{0}}};
+    const std::vector<Mixer::Event> volume_to_half{{0, Channel::Event::SetVolume{0.5}}};
 
     Player player(mod);
 
@@ -123,8 +117,7 @@ TEST_F(PlayerGlobalEffects, CanHandleBreakToRowCommand)
     mod->patterns.resize(2, Pattern(8));
     mod->patternOrder = {0, 1, 255};
 
-    ASSERT_TRUE(
-        parse_pattern(R"(... .. .. C05 ... .. .. C03)", mod->patterns[0]));
+    ASSERT_TRUE(parse_pattern(R"(... .. .. C05 ... .. .. C03)", mod->patterns[0]));
     Player player(mod);
     player.process_tick();
 
@@ -143,8 +136,7 @@ TEST_F(PlayerGlobalEffects, CanHandleSetTempoCommand)
 
 TEST_F(PlayerChannelEffects, CanHandleFineVolumeSlide)
 {
-    const std::vector<Mixer::Event> volume_at_3_4ths{
-        {0, Channel::Event::SetVolume{0.75f}}};
+    const std::vector<Mixer::Event> volume_at_3_4ths{{0, Channel::Event::SetVolume{0.75f}}};
 
     ASSERT_TRUE(parse_pattern(R"(C-5 01 64 DF8
                                  ... .. .. D00
@@ -264,20 +256,17 @@ TEST_F(PlayerNoteInterpretation, CanEmitVolumeChangeEvents)
     }
     {
         const auto& events = player.process_tick();
-        std::vector<Mixer::Event> expected{
-            {0, Channel::Event::SetVolume{0.25f}}};
+        std::vector<Mixer::Event> expected{{0, Channel::Event::SetVolume{0.25f}}};
         EXPECT_EQ(events, expected);
     }
     {
         const auto& events = player.process_tick();
-        std::vector<Mixer::Event> expected{
-            {0, Channel::Event::SetVolume{0.50f}}};
+        std::vector<Mixer::Event> expected{{0, Channel::Event::SetVolume{0.50f}}};
         EXPECT_EQ(events, expected);
     }
     {
         const auto& events = player.process_tick();
-        std::vector<Mixer::Event> expected{
-            {0, Channel::Event::SetVolume{1.0f}}};
+        std::vector<Mixer::Event> expected{{0, Channel::Event::SetVolume{1.0f}}};
         EXPECT_EQ(events, expected);
     }
 }
@@ -459,8 +448,7 @@ TEST_F(PlayerBehavior, PlayerSpeedHasSignificance)
 
     {
         const auto& events = player.process_tick();
-        std::vector<Mixer::Event> expected{
-            {0, Channel::Event::SetVolume{0.50f}}};
+        std::vector<Mixer::Event> expected{{0, Channel::Event::SetVolume{0.50f}}};
         EXPECT_EQ(events, expected);
     }
     for (int i = 0; i < 3; ++i) {

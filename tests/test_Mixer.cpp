@@ -8,10 +8,7 @@
 TEST(Mixer, CanAcceptOnTickHandler)
 {
     struct TestHandler : public Mixer::TickHandler {
-        void onAttachment(Mixer& audio) override
-        {
-            audio.set_samples_per_tick(3);
-        }
+        void onAttachment(Mixer& audio) override { audio.set_samples_per_tick(3); }
         void onTick(Mixer& audio) override
         {
             (void)audio;
@@ -34,10 +31,7 @@ TEST(Mixer, CanAcceptOnTickHandler)
 TEST(Mixer, CanSetTicksPerSecond)
 {
     struct TestHandler : public Mixer::TickHandler {
-        void onAttachment(Mixer& audio) override
-        {
-            audio.set_samples_per_tick(3);
-        }
+        void onAttachment(Mixer& audio) override { audio.set_samples_per_tick(3); }
         void onTick(Mixer& audio) override
         {
             (void)audio;
@@ -73,8 +67,7 @@ TEST(Mixer, CanRenderSingleChannel)
         float volume;
     };
 
-    std::vector<float> expected{1.0f,  1.0f,  0.5f,   0.5,
-                                0.25f, 0.25f, 0.125f, 0.125f};
+    std::vector<float> expected{1.0f, 1.0f, 0.5f, 0.5, 0.25f, 0.25f, 0.125f, 0.125f};
     std::vector<float> buffer(expected.size());
 
     VolumeTweaker t;

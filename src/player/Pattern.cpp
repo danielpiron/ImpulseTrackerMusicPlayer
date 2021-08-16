@@ -1,13 +1,12 @@
 #include "Pattern.h"
 
-bool parse_pattern(std::string::const_iterator& start,
-                   const std::string::const_iterator& last, Pattern& pattern)
+bool parse_pattern(std::string::const_iterator& start, const std::string::const_iterator& last,
+                   Pattern& pattern)
 {
     size_t current_row = 0;
     size_t current_channel = 0;
     while (start != last && current_row < pattern.row_count()) {
-        pattern.channel(current_channel++).row(current_row) =
-            parse_pattern_entry(start, last);
+        pattern.channel(current_channel++).row(current_row) = parse_pattern_entry(start, last);
         // Look for a newline to advance to next row
         while (std::isspace(*start)) {
             if (*start++ == '\n') {

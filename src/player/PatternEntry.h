@@ -10,11 +10,7 @@ struct PatternEntry {
 
     class Note {
       public:
-        enum class Type : uint8_t {
-            empty = 253,
-            note_off = 254,
-            note_cut = 255
-        };
+        enum class Type : uint8_t { empty = 253, note_off = 254, note_cut = 255 };
         enum class Name : uint8_t {
             c_natural = 0,
             c_sharp,
@@ -33,14 +29,8 @@ struct PatternEntry {
       public:
         Note() : _type(Type::empty) {}
 
-        explicit Note(int index, int octave)
-            : _value(static_cast<uint8_t>(octave * 12 + index))
-        {
-        }
-        explicit Note(Name name, int octave)
-            : Note(static_cast<int>(name), octave)
-        {
-        }
+        explicit Note(int index, int octave) : _value(static_cast<uint8_t>(octave * 12 + index)) {}
+        explicit Note(Name name, int octave) : Note(static_cast<int>(name), octave) {}
         explicit Note(Type type) : _type(type) {}
 
         Name name() const { return static_cast<Name>(index()); }
@@ -80,26 +70,21 @@ struct PatternEntry {
         {
         }
 
-        bool operator==(const Effect& rhs) const
-        {
-            return comm == rhs.comm && data == rhs.data;
-        }
+        bool operator==(const Effect& rhs) const { return comm == rhs.comm && data == rhs.data; }
 
         Command comm;
         uint8_t data;
     };
 
-    PatternEntry(Note note = Note(), int inst = 0, Effect vol = Effect(),
-                 Effect effect = Effect())
-        : _note(note), _inst(static_cast<Inst>(inst)), _volume_effect(vol),
-          _effect(effect)
+    PatternEntry(Note note = Note(), int inst = 0, Effect vol = Effect(), Effect effect = Effect())
+        : _note(note), _inst(static_cast<Inst>(inst)), _volume_effect(vol), _effect(effect)
     {
     }
 
     bool operator==(const PatternEntry& rhs) const
     {
-        return _note == rhs._note && _inst == rhs._inst &&
-               _volume_effect == rhs._volume_effect && _effect == rhs._effect;
+        return _note == rhs._note && _inst == rhs._inst && _volume_effect == rhs._volume_effect &&
+               _effect == rhs._effect;
     }
 
     Note _note;
@@ -108,13 +93,11 @@ struct PatternEntry {
     Effect _effect;
 };
 
-extern std::ostream& operator<<(std::ostream& os,
-                                const PatternEntry::Note& note);
+extern std::ostream& operator<<(std::ostream& os, const PatternEntry::Note& note);
 extern std::ostream& operator<<(std::ostream& os, const PatternEntry& pe);
 extern PatternEntry parse_pattern_entry(const std::string& text);
-extern PatternEntry
-parse_pattern_entry(std::string::const_iterator& curr,
-                    const std::string::const_iterator& last);
+extern PatternEntry parse_pattern_entry(std::string::const_iterator& curr,
+                                        const std::string::const_iterator& last);
 extern void skip_whitespace(std::string::const_iterator& curr);
 
 #endif

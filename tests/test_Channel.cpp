@@ -34,7 +34,7 @@ TEST(Channel, CanSpecifyFrequency)
     std::vector<float> expected{
         0.0f, 0.25f, 0.5f, 0.75f, 1.0f, // Render 1 - Frequency x1
         0.0,  0.5f,  1.0f,              // Render 2 - Frequency x2
-        0.25, 0.375, 0.5,  0.625f // Render 3 - Frequency x0.5 (with lerping)
+        0.25, 0.375, 0.5,  0.625f       // Render 3 - Frequency x0.5 (with lerping)
     };
     std::vector<float> buffer(expected.size(), 0);
     Sample sample(expected.begin(), expected.begin() + 5, 1);

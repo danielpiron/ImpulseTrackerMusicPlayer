@@ -64,8 +64,7 @@ std::ostream& operator<<(std::ostream& os, const PatternEntry& pe)
 
     auto width = os.width();
     auto fill = os.fill();
-    os << std::setfill('0') << std::setw(2) << std::hex
-       << static_cast<int>(pe._effect.data);
+    os << std::setfill('0') << std::setw(2) << std::hex << static_cast<int>(pe._effect.data);
     os << std::setfill(fill) << std::setw(static_cast<int>(width)) << std::dec;
 
     return os;
@@ -79,9 +78,8 @@ int parse_hex_digit(char digit)
     return digit - 'A' + 10;
 }
 
-static PatternEntry::Note
-parse_pattern_entry_note(std::string::const_iterator& curr,
-                         const std::string::const_iterator&)
+static PatternEntry::Note parse_pattern_entry_note(std::string::const_iterator& curr,
+                                                   const std::string::const_iterator&)
 {
     char buffer[4];
     for (size_t i = 0; i < 3; ++i) {
@@ -107,9 +105,8 @@ parse_pattern_entry_note(std::string::const_iterator& curr,
     return PatternEntry::Note();
 }
 
-static PatternEntry::Inst
-parse_pattern_entry_inst(std::string::const_iterator& curr,
-                         const std::string::const_iterator&)
+static PatternEntry::Inst parse_pattern_entry_inst(std::string::const_iterator& curr,
+                                                   const std::string::const_iterator&)
 {
     char buffer[3];
     for (size_t i = 0; i < 2; ++i) {
@@ -119,9 +116,8 @@ parse_pattern_entry_inst(std::string::const_iterator& curr,
     return static_cast<PatternEntry::Inst>(std::atoi(buffer));
 }
 
-static PatternEntry::Effect
-parse_pattern_entry_vol_effect(std::string::const_iterator& curr,
-                               const std::string::const_iterator&)
+static PatternEntry::Effect parse_pattern_entry_vol_effect(std::string::const_iterator& curr,
+                                                           const std::string::const_iterator&)
 {
     char buffer[3];
     for (size_t i = 0; i < 2; ++i) {
@@ -138,9 +134,8 @@ parse_pattern_entry_vol_effect(std::string::const_iterator& curr,
     return PatternEntry::Effect(comm, volume);
 }
 
-static PatternEntry::Effect
-parse_pattern_entry_effect(std::string::const_iterator& curr,
-                           const std::string::const_iterator&)
+static PatternEntry::Effect parse_pattern_entry_effect(std::string::const_iterator& curr,
+                                                       const std::string::const_iterator&)
 {
     char column[4];
     for (size_t i = 0; i < 3; ++i) {

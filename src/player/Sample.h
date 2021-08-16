@@ -25,24 +25,24 @@ class Sample {
 
   public:
     template <typename Iterator>
-    Sample(Iterator b, Iterator e, size_t playbackRate,
-           LoopParams loopParams = LoopParams())
+    Sample(Iterator b, Iterator e, size_t playbackRate, LoopParams loopParams = LoopParams())
         : _data(b, e),
           _playbackRate(playbackRate), _loop{loopParams.type, loopParams.begin,
-                                             loopParams.end ? loopParams.end
-                                                            : _data.size()}
+                                             loopParams.end ? loopParams.end : _data.size()}
     {
     }
     Sample(std::initializer_list<float> il, size_t playbackRate,
            LoopParams loopParams = LoopParams())
         : _data(il),
           _playbackRate(playbackRate), _loop{loopParams.type, loopParams.begin,
-                                             loopParams.end ? loopParams.end
-                                                            : _data.size()}
+                                             loopParams.end ? loopParams.end : _data.size()}
     {
     }
 
-    Sample(const Sample&& other) : _data(other._data), _playbackRate(other._playbackRate), _loop(other._loop) {}
+    Sample(const Sample&& other)
+        : _data(other._data), _playbackRate(other._playbackRate), _loop(other._loop)
+    {
+    }
 
     inline float operator[](float i) const
     {

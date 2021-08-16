@@ -6,18 +6,16 @@
 #include <iostream>
 
 Player::Player(const std::shared_ptr<Module>& mod)
-    : module(std::const_pointer_cast<const Module>(mod)),
-      speed(mod->initial_speed), tempo(mod->initial_tempo), tick_counter(1),
-      break_row(0), current_row(0), current_order(0), process_row(0),
-      channels(32), _mixer(44100, 16)
+    : module(std::const_pointer_cast<const Module>(mod)), speed(mod->initial_speed),
+      tempo(mod->initial_tempo), tick_counter(1), break_row(0), current_row(0), current_order(0),
+      process_row(0), channels(32), _mixer(44100, 16)
 {
     _mixer.attach_handler(this);
 }
 
 void Player::onAttachment(Mixer& audio)
 {
-    audio.set_samples_per_tick(
-        static_cast<size_t>(2.5f * audio.sampling_rate() / tempo));
+    audio.set_samples_per_tick(static_cast<size_t>(2.5f * audio.sampling_rate() / tempo));
 }
 
 void Player::onTick(Mixer& audio)
@@ -55,8 +53,7 @@ void Player::process_global_command(const PatternEntry::Effect& effect)
     }
 }
 
-void Player::process_initial_tick(Player::Channel& channel,
-                                  const PatternEntry& entry)
+void Player::process_initial_tick(Player::Channel& channel, const PatternEntry& entry)
 {
     static const int note_periods[] = {1712, 1616, 1524, 1440, 1356, 1280,
                                        1208, 1140, 1076, 1016, 960,  907};
@@ -71,14 +68,11 @@ void Player::process_initial_tick(Player::Channel& channel,
         candidate_note = true;
     }
 
-    if (candidate_note && channel.last_note.is_playable() &&
-        channel.last_inst) {
+    if (candidate_note && channel.last_note.is_playable() && channel.last_inst) {
         channel.note_on = true;
         channel.period =
-            ((8363 * 32 * note_periods[channel.last_note.index()]) >>
-             channel.last_note.octave()) /
-            static_cast<int>(
-                module->samples[channel.last_inst - 1].sample.playbackRate());
+            ((8363 * 32 * note_periods[channel.last_note.index()]) >> channel.last_note.octave()) /
+            static_cast<int>(module->samples[channel.last_inst - 1].sample.playbackRate());
 
         channel.volume = module->samples[channel.last_inst - 1].default_volume;
     }
@@ -93,8 +87,7 @@ void Player::process_initial_tick(Player::Channel& channel,
 
     channel.effects.volume_slide = 0;
     if (entry._effect.comm == PatternEntry::Command::volume_slide) {
-        auto data = entry._effect.data ? entry._effect.data
-                                       : channel.effects_memory.volume_slide;
+        auto data = entry._effect.data ? entry._effect.data : channel.effects_memory.volume_slide;
         channel.effects_memory.volume_slide = data;
         if ((data & 0xF0) == 0xF0) {
             // Fine slide down
@@ -123,10 +116,9 @@ const std::vector<Mixer::Event>& Player::process_tick()
 
     bool initial_tick = --tick_counter == 0;
 
-    const auto& current_pattern =
-        module->patterns[module->patternOrder[current_order]];
-    for (size_t channel_index = 0;
-         channel_index < current_pattern.channel_count(); ++channel_index) {
+    const auto& current_pattern = module->patterns[module->patternOrder[current_order]];
+    for (size_t channel_index = 0; channel_index < current_pattern.channel_count();
+         ++channel_index) {
 
         auto& channel = channels[static_cast<size_t>(channel_index)];
 
@@ -134,8 +126,7 @@ const std::vector<Mixer::Event>& Player::process_tick()
         auto last_period = channel.period;
 
         if (initial_tick) {
-            const auto& entry =
-                current_pattern.channel(channel_index).row(current_row);
+            const auto& entry = current_pattern.channel(channel_index).row(current_row);
             process_global_command(entry._effect);
             process_initial_tick(channel, entry);
         } else {
@@ -145,31 +136,27 @@ const std::vector<Mixer::Event>& Player::process_tick()
         if (channel.note_on || channel.period != last_period) {
             auto playback_frequency = 14317456 / channel.period;
             if (channel.note_on) {
-                mixer_events.push_back(
-                    {static_cast<size_t>(channel_index),
-                     ::Channel::Event::SetNoteOn{
-                         static_cast<float>(playback_frequency),
-                         &(module->samples[channel.last_inst - 1].sample)}});
+                mixer_events.push_back({static_cast<size_t>(channel_index),
+                                        ::Channel::Event::SetNoteOn{
+                                            static_cast<float>(playback_frequency),
+                                            &(module->samples[channel.last_inst - 1].sample)}});
                 channel.note_on = false;
             }
         }
 
-        channel.volume = std::clamp(channel.volume, static_cast<int8_t>(0),
-                                    static_cast<int8_t>(64));
+        channel.volume =
+            std::clamp(channel.volume, static_cast<int8_t>(0), static_cast<int8_t>(64));
         if (channel.volume != last_volume) {
             mixer_events.push_back(
                 {static_cast<size_t>(channel_index),
-                 ::Channel::Event::SetVolume{
-                     static_cast<float>(channel.volume) / 64.0f}});
+                 ::Channel::Event::SetVolume{static_cast<float>(channel.volume) / 64.0f}});
         }
     }
 
     if (initial_tick) {
         tick_counter = speed;
         if (process_row == 0xFFFE ||
-            ++process_row >=
-                module->patterns[module->patternOrder[current_order]]
-                    .row_count()) {
+            ++process_row >= module->patterns[module->patternOrder[current_order]].row_count()) {
             current_order++;
             // TODO: End of order value 255 needs a name
             if (module->patternOrder[current_order] == 255) {

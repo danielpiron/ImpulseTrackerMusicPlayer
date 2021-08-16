@@ -26,15 +26,9 @@ class Pattern {
     };
 
   public:
-    Pattern(size_t row_count)
-        : _channels(32, Channel(row_count)), _row_count(row_count)
-    {
-    }
+    Pattern(size_t row_count) : _channels(32, Channel(row_count)), _row_count(row_count) {}
 
-    bool operator==(const Pattern& rhs) const
-    {
-        return _channels == rhs._channels;
-    }
+    bool operator==(const Pattern& rhs) const { return _channels == rhs._channels; }
 
     Channel& channel(size_t c) { return _channels[c]; }
     const Channel& channel(size_t c) const { return _channels[c]; }
@@ -47,11 +41,9 @@ class Pattern {
 };
 
 extern bool parse_pattern(std::string::const_iterator& start,
-                          const std::string::const_iterator& last,
-                          Pattern& pattern);
+                          const std::string::const_iterator& last, Pattern& pattern);
 extern bool parse_pattern(const std::string& text, Pattern& pattern);
-extern std::ostream& operator<<(std::ostream& os,
-                                const Pattern::Channel& channel);
+extern std::ostream& operator<<(std::ostream& os, const Pattern::Channel& channel);
 extern std::ostream& operator<<(std::ostream& os, const Pattern& pattern);
 
 #endif

@@ -11,10 +11,7 @@ class Channel {
     struct Event {
         struct SetFrequency {
             float frequency;
-            bool operator==(const SetFrequency& rhs) const
-            {
-                return frequency == rhs.frequency;
-            }
+            bool operator==(const SetFrequency& rhs) const { return frequency == rhs.frequency; }
         };
         struct SetNoteOn {
             float frequency;
@@ -26,10 +23,7 @@ class Channel {
         };
         struct SetVolume {
             float volume;
-            bool operator==(const SetVolume& rhs) const
-            {
-                return volume == rhs.volume;
-            }
+            bool operator==(const SetVolume& rhs) const { return volume == rhs.volume; }
         };
         using Action = std::variant<SetFrequency, SetNoteOn, SetVolume>;
     };
@@ -47,10 +41,7 @@ class Channel {
                 c.set_frequency(note_on.frequency);
                 c.play(note_on.sample);
             }
-            void operator()(const Event::SetVolume& set_vol)
-            {
-                c.set_volume(set_vol.volume);
-            }
+            void operator()(const Event::SetVolume& set_vol) { c.set_volume(set_vol.volume); }
             Channel& c;
         };
         std::visit(ActionInterpreter{*this}, action);
@@ -79,17 +70,14 @@ class Channel {
 
         float rate = _frequency / static_cast<float>(targetSampleRate);
         if (!is_active() || _sample == nullptr) {
-            std::memset(outputBuffer, 0,
-                        framesPerBuffer * sizeof outputBuffer[0]);
+            std::memset(outputBuffer, 0, framesPerBuffer * sizeof outputBuffer[0]);
             return;
         }
         while (framesPerBuffer--) {
             if (static_cast<size_t>(_sampleIndex) >= _sample->loopEnd()) {
-                if (_sample->loopType() ==
-                    Sample::LoopParams::Type::non_looping) {
+                if (_sample->loopType() == Sample::LoopParams::Type::non_looping) {
                     // If we're done with this sample fill the rest with zeros
-                    std::memset(outputBuffer, 0,
-                                framesPerBuffer * sizeof(outputBuffer[0]));
+                    std::memset(outputBuffer, 0, framesPerBuffer * sizeof(outputBuffer[0]));
                     // and leave.
                     break;
                 }
@@ -113,7 +101,6 @@ class Channel {
     bool _is_active = false;
 };
 
-extern std::ostream& operator<<(std::ostream& os,
-                                const Channel::Event::Action& action);
+extern std::ostream& operator<<(std::ostream& os, const Channel::Event::Action& action);
 
 #endif
