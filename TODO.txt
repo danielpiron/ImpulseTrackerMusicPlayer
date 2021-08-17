@@ -4,6 +4,6 @@
 [X] Handle multiple channels in a pattern.
 [X] Correct handling of "set speed"
 [X] Implement volume slide effect.
-[ ] Implement pitch slide (slide up, slide down, portamento)
+[X] Implement pitch slide (slide up, slide down, portamento)
 [ ] Fix iterator related bugs in parsing patterns (Manifested on Windows)
 [ ] Fix empty sample loading bug (Manifested on Windows)

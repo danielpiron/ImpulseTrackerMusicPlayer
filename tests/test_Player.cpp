@@ -388,6 +388,43 @@ TEST_F(PlayerChannelEffects, CanPitchSlideUp)
     EXPECT_EQ(player.channels[0].period, 1712 - 48);
 }
 
+TEST_F(PlayerChannelEffects, CanPitchPortamentoToNote)
+{
+    ASSERT_TRUE(parse_pattern(R"(A#5 01 .. .00
+                                 B-5 01 .. G04
+                                 ... .. .. G00
+                                 ... .. .. .00)",
+                              mod->patterns[0]));
+
+    mod->initial_speed = 3;
+    Player player(mod);
+
+    // SKIP ROW 1
+    advance_player(player, 3);
+
+    // Protamento speed is
+    // ROW 2
+    ASSERT_EQ(player.process_tick(), no_events);
+    ASSERT_EQ(player.channels[0].period, 960); // We are still at the initial period after tick 1
+    ASSERT_NE(player.process_tick(), no_events);
+    EXPECT_EQ(player.channels[0].period, 960 - 16);
+    ASSERT_NE(player.process_tick(), no_events);
+    EXPECT_EQ(player.channels[0].period, 960 - 32);
+
+    // ROW 3
+    ASSERT_EQ(player.process_tick(), no_events);
+    EXPECT_EQ(player.channels[0].period, 960 - 32);
+    ASSERT_NE(player.process_tick(), no_events);
+    EXPECT_EQ(player.channels[0].period, 960 - 48);
+    ASSERT_NE(player.process_tick(), no_events);
+    EXPECT_EQ(player.channels[0].period, 907); // Target reached (and not passed)
+
+    // ROW 4 - effect has turned off
+    ASSERT_EQ(player.process_tick(), no_events);
+    ASSERT_EQ(player.process_tick(), no_events);
+    ASSERT_EQ(player.process_tick(), no_events);
+}
+
 TEST_F(PlayerNoteInterpretation, CanEmitVolumeChangeEvents)
 {
     ASSERT_TRUE(parse_pattern(R"(... .. 00 .00

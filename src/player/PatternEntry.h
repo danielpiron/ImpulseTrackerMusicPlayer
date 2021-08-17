@@ -62,6 +62,7 @@ struct PatternEntry {
         volume_slide,
         pitch_slide_down,
         pitch_slide_up,
+        portamento_to_note,
         set_tempo,
         set_volume
     };

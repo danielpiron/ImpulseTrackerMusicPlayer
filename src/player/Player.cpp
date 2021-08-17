@@ -60,11 +60,17 @@ void Player::process_global_command(const PatternEntry::Effect& effect)
     }
 }
 
-void Player::process_initial_tick(Player::Channel& channel, const PatternEntry& entry)
+int Player::calculate_period(const PatternEntry::Note& note, const int sample_number)
 {
     static const int note_periods[] = {1712, 1616, 1524, 1440, 1356, 1280,
                                        1208, 1140, 1076, 1016, 960,  907};
+    return ((8363 * 32 * note_periods[note.index()]) >> note.octave()) /
+           static_cast<int>(
+               module->samples[static_cast<size_t>(sample_number - 1)].sample.playbackRate());
+}
 
+void Player::process_initial_tick(Player::Channel& channel, const PatternEntry& entry)
+{
     bool candidate_note = false;
     if (!entry._note.is_empty()) {
         channel.last_note = entry._note;
@@ -76,11 +82,10 @@ void Player::process_initial_tick(Player::Channel& channel, const PatternEntry& 
     }
 
     if (candidate_note && channel.last_note.is_playable() && channel.last_inst) {
-        channel.note_on = true;
-        channel.period =
-            ((8363 * 32 * note_periods[channel.last_note.index()]) >> channel.last_note.octave()) /
-            static_cast<int>(module->samples[channel.last_inst - 1].sample.playbackRate());
-
+        if (entry._effect.comm != PatternEntry::Command::portamento_to_note) {
+            channel.note_on = true;
+            channel.period = calculate_period(channel.last_note, channel.last_inst);
+        }
         channel.volume = module->samples[channel.last_inst - 1].default_volume;
     }
 
@@ -92,8 +97,8 @@ void Player::process_initial_tick(Player::Channel& channel, const PatternEntry& 
         break;
     }
 
-    channel.effects.volume_slide = 0;
-    channel.effects.pitch_slide = 0;
+    channel.effects.volume_slide_speed = 0;
+    channel.effects.pitch_slide_speed = 0;
     if (entry._effect.comm == PatternEntry::Command::volume_slide) {
         auto data = entry._effect.data ? entry._effect.data : channel.effects_memory.volume_slide;
         channel.effects_memory.volume_slide = data;
@@ -105,10 +110,10 @@ void Player::process_initial_tick(Player::Channel& channel, const PatternEntry& 
             channel.volume += data >> 4;
         } else if ((data & 0x0F) && (data & 0xF0) == 0) {
             // Slide down
-            channel.effects.volume_slide = -static_cast<int8_t>(data & 0x0F);
+            channel.effects.volume_slide_speed = -static_cast<int8_t>(data & 0x0F);
         } else if ((data & 0xF0) && (data & 0x0F) == 0) {
             // Slide up
-            channel.effects.volume_slide = static_cast<int8_t>((data >> 4));
+            channel.effects.volume_slide_speed = static_cast<int8_t>((data >> 4));
         }
     } else if (entry._effect.comm == PatternEntry::Command::pitch_slide_down) {
         auto data = entry._effect.data ? entry._effect.data : channel.effects_memory.pitch_slide;
@@ -118,7 +123,8 @@ void Player::process_initial_tick(Player::Channel& channel, const PatternEntry& 
         } else if ((data & 0xF0) == 0xF0) {
             channel.period += (data & 0x0F) * 4;
         } else {
-            channel.effects.pitch_slide = static_cast<int8_t>(data * 4);
+            channel.effects.pitch_slide_speed = static_cast<int8_t>(data * 4);
+            channel.effects.pitch_slide_target = 54784 + 1;
         }
     } else if (entry._effect.comm == PatternEntry::Command::pitch_slide_up) {
         auto data = entry._effect.data ? entry._effect.data : channel.effects_memory.pitch_slide;
@@ -128,15 +134,37 @@ void Player::process_initial_tick(Player::Channel& channel, const PatternEntry& 
         } else if ((data & 0xF0) == 0xF0) {
             channel.period -= (data & 0x0F) * 4;
         } else {
-            channel.effects.pitch_slide = -static_cast<int8_t>(data * 4);
+            channel.effects.pitch_slide_speed = -static_cast<int8_t>(data * 4);
+            channel.effects.pitch_slide_target = 56 - 1;
+        }
+    } else if (entry._effect.comm == PatternEntry::Command::portamento_to_note) {
+        auto data = entry._effect.data ? entry._effect.data : channel.effects_memory.pitch_slide;
+        channel.effects_memory.pitch_slide = data;
+
+        channel.effects.pitch_slide_target = calculate_period(channel.last_note, channel.last_inst);
+        channel.effects.pitch_slide_speed = static_cast<int8_t>(data * 4);
+
+        if (channel.period > channel.effects.pitch_slide_target) {
+            channel.effects.pitch_slide_speed = -channel.effects.pitch_slide_speed;
         }
     }
 }
 
 static void update_effects(Player::Channel& channel)
 {
-    channel.volume += channel.effects.volume_slide;
-    channel.period += channel.effects.pitch_slide;
+    channel.volume += channel.effects.volume_slide_speed;
+    if (channel.effects.pitch_slide_speed) {
+        channel.period += channel.effects.pitch_slide_speed;
+
+        if ((channel.effects.pitch_slide_speed > 0 &&
+             channel.period > channel.effects.pitch_slide_target) ||
+            (channel.effects.pitch_slide_speed < 0 &&
+             channel.period < channel.effects.pitch_slide_target)) {
+            channel.period = channel.effects.pitch_slide_target;
+            channel.effects.pitch_slide_speed = 0;
+            channel.effects.pitch_slide_target = 0;
+        }
+    }
 }
 
 const std::vector<Mixer::Event>& Player::process_tick()
