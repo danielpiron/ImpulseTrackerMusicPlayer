@@ -18,14 +18,22 @@ struct Player : public Mixer::TickHandler {
     struct Channel {
 
         struct Effects {
-            int8_t volume_slide_speed;
-            int pitch_slide_speed;
-            int pitch_slide_target;
+            struct Vibrato {
+                uint8_t index = 0;
+                uint8_t speed = 0;
+                uint8_t depth = 0;
+            };
+
+            int8_t volume_slide_speed = 0;
+            int pitch_slide_speed = 0;
+            int pitch_slide_target = 0;
+            Vibrato vibrato;
         };
 
         struct EffectsMemory {
-            uint8_t volume_slide;
-            uint8_t pitch_slide;
+            uint8_t volume_slide = 0;
+            uint8_t pitch_slide = 0;
+            uint8_t vibrato = 0;
         };
 
       public:
@@ -38,6 +46,7 @@ struct Player : public Mixer::TickHandler {
       public:
         bool note_on = false;
         int period;
+        int period_offset = 0;
         int8_t volume = 64;
     };
 

@@ -56,10 +56,42 @@ std::ostream& operator<<(std::ostream& os, const PatternEntry& pe)
     }
     os << " ";
     // End Handle
-    if (pe._effect == PatternEntry::Command::none) {
-        os << ".";
-    } else {
-        os << static_cast<char>('A' + static_cast<int>(pe._effect.comm) - 1);
+    switch (pe._effect.comm) {
+    case PatternEntry::Command::none:
+        os << '.';
+        break;
+    case PatternEntry::Command::set_speed:
+        os << 'A';
+        break;
+    case PatternEntry::Command::jump_to_order:
+        os << 'B';
+        break;
+    case PatternEntry::Command::break_to_row:
+        os << 'C';
+        break;
+    case PatternEntry::Command::volume_slide:
+        os << 'D';
+        break;
+    case PatternEntry::Command::pitch_slide_down:
+        os << 'E';
+        break;
+    case PatternEntry::Command::pitch_slide_up:
+        os << 'F';
+        break;
+    case PatternEntry::Command::portamento_to_note:
+        os << 'G';
+        break;
+    case PatternEntry::Command::vibrato:
+        os << 'H';
+        break;
+    case PatternEntry::Command::portamento_to_and_volume_slide:
+        os << 'L';
+        break;
+    case PatternEntry::Command::set_tempo:
+        os << 'T';
+        break;
+    default:
+        os << '?';
     }
 
     auto width = os.width();
@@ -170,6 +202,9 @@ static PatternEntry::Effect parse_pattern_entry_effect(std::string::const_iterat
         break;
     case 'G':
         comm = PatternEntry::Command::portamento_to_note;
+        break;
+    case 'H':
+        comm = PatternEntry::Command::vibrato;
         break;
     case 'L':
         comm = PatternEntry::Command::portamento_to_and_volume_slide;

@@ -5,6 +5,23 @@
 #include <algorithm>
 #include <iostream>
 
+static const int8_t sine_table[256] = {
+    0,   2,   3,   5,   6,   8,   9,   11,  12,  14,  16,  17,  19,  20,  22,  23,  24,  26,  27,
+    29,  30,  32,  33,  34,  36,  37,  38,  39,  41,  42,  43,  44,  45,  46,  47,  48,  49,  50,
+    51,  52,  53,  54,  55,  56,  56,  57,  58,  59,  59,  60,  60,  61,  61,  62,  62,  62,  63,
+    63,  63,  64,  64,  64,  64,  64,  64,  64,  64,  64,  64,  64,  63,  63,  63,  62,  62,  62,
+    61,  61,  60,  60,  59,  59,  58,  57,  56,  56,  55,  54,  53,  52,  51,  50,  49,  48,  47,
+    46,  45,  44,  43,  42,  41,  39,  38,  37,  36,  34,  33,  32,  30,  29,  27,  26,  24,  23,
+    22,  20,  19,  17,  16,  14,  12,  11,  9,   8,   6,   5,   3,   2,   0,   -2,  -3,  -5,  -6,
+    -8,  -9,  -11, -12, -14, -16, -17, -19, -20, -22, -23, -24, -26, -27, -29, -30, -32, -33, -34,
+    -36, -37, -38, -39, -41, -42, -43, -44, -45, -46, -47, -48, -49, -50, -51, -52, -53, -54, -55,
+    -56, -56, -57, -58, -59, -59, -60, -60, -61, -61, -62, -62, -62, -63, -63, -63, -64, -64, -64,
+    -64, -64, -64, -64, -64, -64, -64, -64, -63, -63, -63, -62, -62, -62, -61, -61, -60, -60, -59,
+    -59, -58, -57, -56, -56, -55, -54, -53, -52, -51, -50, -49, -48, -47, -46, -45, -44, -43, -42,
+    -41, -39, -38, -37, -36, -34, -33, -32, -30, -29, -27, -26, -24, -23, -22, -20, -19, -17, -16,
+    -14, -12, -11, -9,  -8,  -6,  -5,  -3,  -2,
+};
+
 Player::Player(const std::shared_ptr<Module>& mod)
     : module(std::const_pointer_cast<const Module>(mod)),
       speed(mod->initial_speed),
@@ -101,9 +118,15 @@ void Player::process_initial_tick(Player::Channel& channel, const PatternEntry& 
     }
 
     channel.effects.volume_slide_speed = 0;
+    channel.effects.vibrato.speed = 0;
+    channel.effects.vibrato.depth = 0;
 
-    if (entry._effect.comm != PatternEntry::Command::portamento_to_and_volume_slide)
+    if (entry._effect.comm != PatternEntry::Command::vibrato) {
+        channel.period_offset = 0;
+    }
+    if (entry._effect.comm != PatternEntry::Command::portamento_to_and_volume_slide) {
         channel.effects.pitch_slide_speed = 0;
+    }
     if (entry._effect.comm == PatternEntry::Command::volume_slide ||
         entry._effect.comm == PatternEntry::Command::portamento_to_and_volume_slide) {
         auto data = entry._effect.data ? entry._effect.data : channel.effects_memory.volume_slide;
@@ -156,6 +179,18 @@ void Player::process_initial_tick(Player::Channel& channel, const PatternEntry& 
         if (channel.period > channel.effects.pitch_slide_target) {
             channel.effects.pitch_slide_speed = -channel.effects.pitch_slide_speed;
         }
+    } else if (entry._effect.comm == PatternEntry::Command::vibrato) {
+        auto data = entry._effect.data;
+        if ((data & 0xF0) == 0) {
+            data |= channel.effects_memory.vibrato & 0xF0;
+        }
+        if ((data & 0x0F) == 0) {
+            data |= channel.effects_memory.vibrato & 0x0F;
+        }
+        channel.effects_memory.vibrato = data;
+
+        channel.effects.vibrato.speed = (data >> 4) * 4;
+        channel.effects.vibrato.depth = (data & 0x0F) * 4;
     }
 }
 
@@ -174,6 +209,11 @@ static void update_effects(Player::Channel& channel)
             channel.effects.pitch_slide_target = 0;
         }
     }
+    if (channel.effects.vibrato.speed) {
+        channel.effects.vibrato.index += channel.effects.vibrato.speed;
+        channel.period_offset =
+            (sine_table[channel.effects.vibrato.index] * channel.effects.vibrato.depth) >> 5;
+    }
 }
 
 const std::vector<Mixer::Event>& Player::process_tick()
@@ -190,6 +230,7 @@ const std::vector<Mixer::Event>& Player::process_tick()
 
         auto last_volume = channel.volume;
         auto last_period = channel.period;
+        auto last_period_offset = channel.period_offset;
 
         if (initial_tick) {
             const auto& entry = current_pattern.channel(channel_index).row(current_row);
@@ -199,8 +240,9 @@ const std::vector<Mixer::Event>& Player::process_tick()
             update_effects(channel);
         }
 
-        if (channel.note_on || channel.period != last_period) {
-            auto playback_frequency = 14317456 / channel.period;
+        if (channel.note_on || channel.period != last_period ||
+            channel.period_offset != last_period_offset) {
+            auto playback_frequency = 14317456 / (channel.period + channel.period_offset);
             if (channel.note_on) {
                 mixer_events.push_back({static_cast<size_t>(channel_index),
                                         ::Channel::Event::SetNoteOn{
@@ -227,7 +269,8 @@ const std::vector<Mixer::Event>& Player::process_tick()
         tick_counter = speed;
         if (process_row == 0xFFFE ||
             ++process_row >= module->patterns[module->patternOrder[current_order]].row_count()) {
-            current_order++;
+            while (module->patternOrder[++current_order] == 254)
+                ;
             // TODO: End of order value 255 needs a name
             if (module->patternOrder[current_order] == 255) {
                 current_order = 0;

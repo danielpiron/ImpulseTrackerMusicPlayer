@@ -502,34 +502,45 @@ TEST_F(PlayerChannelEffects, CanPitchPortamentoQuickly)
 
 TEST_F(PlayerChannelEffects, CanHandleVibrato)
 {
-    ASSERT_TRUE(parse_pattern(R"(C-5 01 .. H82
+    ASSERT_TRUE(parse_pattern(R"(C-5 01 .. H72
                                  ... .. .. H00
                                  ... .. .. .00)",
                               mod->patterns[0]));
     mod->initial_speed = 3;
     Player player(mod);
 
-    const auto depth = 2;
+    const auto depth = 2 * 4;
 
     // ROW 1
     EXPECT_NE(player.process_tick(), no_events);
     ASSERT_EQ(player.channels[0].period, 1712);
+    ASSERT_EQ(player.channels[0].period_offset, 0);
+
     EXPECT_NE(player.process_tick(), no_events);
-    ASSERT_EQ(player.channels[0].period, 1712 + ((12 * depth) >> 5));
+    ASSERT_EQ(player.channels[0].period, 1712);
+    ASSERT_EQ(player.channels[0].period_offset, (41 * depth) >> 5);
+
     EXPECT_NE(player.process_tick(), no_events);
-    ASSERT_EQ(player.channels[0].period, 1712 + ((24 * depth) >> 5));
+    ASSERT_EQ(player.channels[0].period, 1712);
+    ASSERT_EQ(player.channels[0].period_offset, (63 * depth) >> 5);
 
     // ROW 2
     EXPECT_EQ(player.process_tick(), no_events);
-    ASSERT_EQ(player.channels[0].period, 1712 + ((24 * depth) >> 5));
+    ASSERT_EQ(player.channels[0].period, 1712);
+    ASSERT_EQ(player.channels[0].period_offset, (63 * depth) >> 5);
+
     EXPECT_NE(player.process_tick(), no_events);
-    ASSERT_EQ(player.channels[0].period, 1712 + ((36 * depth) >> 5));
+    ASSERT_EQ(player.channels[0].period, 1712);
+    ASSERT_EQ(player.channels[0].period_offset, (56 * depth) >> 5);
+
     EXPECT_NE(player.process_tick(), no_events);
-    ASSERT_EQ(player.channels[0].period, 1712 + ((45 * depth) >> 5));
+    ASSERT_EQ(player.channels[0].period, 1712);
+    ASSERT_EQ(player.channels[0].period_offset, (24 * depth) >> 5);
 
     // ROW 3 - Snap back to original period
     EXPECT_NE(player.process_tick(), no_events);
     ASSERT_EQ(player.channels[0].period, 1712);
+    ASSERT_EQ(player.channels[0].period_offset, 0);
 }
 
 TEST_F(PlayerNoteInterpretation, CanEmitVolumeChangeEvents)
