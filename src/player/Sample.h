@@ -49,11 +49,17 @@ class Sample {
         auto wholeI = static_cast<size_t>(i);
         float t = i - static_cast<float>(wholeI);
         size_t nextIndex = wholeI + 1;
-        if (nextIndex >= loopEnd()) {
-            nextIndex -= loopLength();
-        }
+
         float v0 = _data[wholeI];
-        float v1 = _data[nextIndex];
+        float v1 = 0;
+        if (nextIndex >= loopEnd()) {
+            if (_loop.type == LoopParams::Type::forward_looping) {
+                nextIndex -= loopLength();
+                v1 = _data[nextIndex];
+            }
+            return v0 + t * (v1 - v0);
+        }
+        v1 = _data[nextIndex];
         return v0 + t * (v1 - v0);
     }
     inline float operator[](size_t i) const { return _data[i]; }

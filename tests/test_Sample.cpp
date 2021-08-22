@@ -72,3 +72,9 @@ TEST(Sample, CanLerpPastLoopEnd)
 
     EXPECT_EQ(sample[3.5f], (0.75f - 0.25f) / 2 + 0.25f);
 }
+
+TEST(Sample, NonLoopingSamplesLerpToZeroAtEnd)
+{
+    Sample sample({1.0f}, 1, {Sample::LoopParams::Type::non_looping});
+    EXPECT_EQ(sample[0.5f], 0.5f);
+}

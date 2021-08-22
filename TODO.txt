@@ -6,7 +6,7 @@
 [X] Implement volume slide effect.
 [X] Implement pitch slide (slide up, slide down, portamento)
 [X] BUG: When none looping sample ends, channel needs to be deactivated
-[ ] LERP to 0 at end of non-looping sample
+[X] LERP to 0 at end of non-looping sample
 [ ] Create loader "txt"
 [ ] Integrate S3M loader from branch
     [ ] Verify validity of S3M and throw error otherwise (crashes now)
