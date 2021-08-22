@@ -95,19 +95,29 @@ TEST(Channel, CanSetVolume)
 TEST(Channel, CanRenderNonLoopingSample)
 {
     // The sample plays then the channel goes silent
-    std::vector<float> expected{-1.0f, 1.0f, 0, 0};
-    std::vector<float> buffer(expected.size(), 0);
+    std::vector<float> expected1{-1.0f, -0.5f, -0.25f, 0.25f};
+    std::vector<float> expected2{0.5f, -1.0f, 0, 0};
+    std::vector<float> expected3{0, 0, 0, 0};
+    std::vector<float> buffer(4, 0);
 
-    // Given that the sample is only two frames long
-    Sample sample({-1.0f, 1.0f}, 1, {Sample::LoopParams::Type::non_looping});
+    // The sample is 6 frames long
+    Sample sample({-1.0f, -0.5f, -0.25f, 0.25f, 0.5f, -1.0f}, 1,
+                  {Sample::LoopParams::Type::non_looping});
     Channel c;
 
     c.play(&sample);
-    // And we are rendering 4 frames
+    // And we are rendering 4 frames, (samples 0-3)
     c.render(&buffer[0], 4, 1);
+    EXPECT_EQ(buffer, expected1);
+    // And another 4 frames (samples 4-5), plus silence at the end
+    c.render(&buffer[0], 4, 1);
+    EXPECT_EQ(buffer, expected2);
+    // Finally 4 more that should be 'silent'
+    c.render(&buffer[0], 4, 1);
+    EXPECT_EQ(buffer, expected3);
 
     // We expect two frames with the sample data, and two at zero
-    EXPECT_EQ(buffer, expected);
+    EXPECT_FALSE(c.is_active());
 }
 
 TEST(Channel, CanBeStopped)

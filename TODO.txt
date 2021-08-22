@@ -5,15 +5,16 @@
 [X] Correct handling of "set speed"
 [X] Implement volume slide effect.
 [X] Implement pitch slide (slide up, slide down, portamento)
-[X] Update LERP function
+[X] BUG: When none looping sample ends, channel needs to be deactivated
 [ ] LERP to 0 at end of non-looping sample
-[ ] BUG: When none looping sample ends, channel needs to be deactivated
-[ ] Import S3M loader from branch
+[ ] Create loader "txt"
+[ ] Integrate S3M loader from branch
     [ ] Verify validity of S3M and throw error otherwise (crashes now)
+[ ] Integrate Impulse Tracker loader from branch
 [ ] Implement vibrato effect
 [ ] Portamento can handle values greater than 7Fh
 [ ] Mixer post-processing (divide by channel count?)
-[ ] Import Impulse Tracker loader from branch
 [ ] Detect file loader based on extension
 [ ] Fix iterator related bugs in parsing patterns (Manifested on Windows)
 [ ] Fix empty sample loading bug (Manifested on Windows)
+[ ] Update LERP function

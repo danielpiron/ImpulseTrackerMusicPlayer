@@ -73,12 +73,14 @@ class Channel {
             std::memset(outputBuffer, 0, framesPerBuffer * sizeof outputBuffer[0]);
             return;
         }
-        while (framesPerBuffer--) {
+        for (; framesPerBuffer; --framesPerBuffer) {
             if (static_cast<size_t>(_sampleIndex) >= _sample->loopEnd()) {
                 if (_sample->loopType() == Sample::LoopParams::Type::non_looping) {
                     // If we're done with this sample fill the rest with zeros
                     std::memset(outputBuffer, 0, framesPerBuffer * sizeof(outputBuffer[0]));
-                    // and leave.
+                    // Stop playback on this channel
+                    stop();
+                    // and do no more.
                     break;
                 }
                 _sampleIndex -= static_cast<float>(_sample->loopLength());
