@@ -99,6 +99,15 @@ TEST_F(PlayerGlobalEffects, CanHandleSetSpeedCommand)
     EXPECT_EQ(player.process_tick(), volume_to_zero);
 }
 
+TEST_F(PlayerGlobalEffects, SettingSpeedToZeroDoesNothing)
+{
+    ASSERT_TRUE(parse_pattern(R"(... .. .. A00)", mod->patterns[0]));
+
+    Player player(mod);
+    EXPECT_EQ(player.process_tick(), no_events);
+    EXPECT_EQ(player.speed, mod->initial_speed);
+}
+
 TEST_F(PlayerGlobalEffects, CanHandleJumpToOrderCommand)
 {
     mod->patterns.resize(3, Pattern(8));

@@ -41,8 +41,10 @@ void Player::process_global_command(const PatternEntry::Effect& effect)
 {
     switch (effect.comm) {
     case PatternEntry::Command::set_speed:
-        speed = effect.data;
-        tick_counter = speed;
+        if (effect.data) {
+            speed = effect.data;
+            tick_counter = speed;
+        }
         break;
     case PatternEntry::Command::jump_to_order:
         current_order = effect.data - 1;

@@ -9,6 +9,7 @@
 [X] LERP to 0 at end of non-looping sample
 [X] Implement portamento + volume slide
 [X] Portamento can handle higher speeds
+[X] BUG: Dont't set speed if data is 0 (it pauses playback indefinitely)
 [ ] Implement vibrato effect
 [ ] Implement vibrato effect + volume slide
 [ ] Create loader "txt"
