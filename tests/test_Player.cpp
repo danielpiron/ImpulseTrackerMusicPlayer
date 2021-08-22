@@ -455,6 +455,42 @@ TEST_F(PlayerChannelEffects, CanPitchPortamentoToNote)
     ASSERT_EQ(player.process_tick(), no_events);
 }
 
+TEST_F(PlayerChannelEffects, CanPitchPortamentoQuickly)
+{
+    // In contrast to E and F, G commands take the full range of speed values 0-FF
+    // Excerpt from "UnreaL ][ /PM"
+    ASSERT_TRUE(parse_pattern(R"(A#4 03 .. A03
+                                 ... .. .. .00
+                                 F-5 03 20 G80
+                                 ... .. .. G00
+                                 A#5 03 .. G00
+                                 ... .. 20 G00
+                                 F-5 03 .. G00)",
+                              mod->patterns[0]));
+
+    const int inst25_c5speed = 14650;
+    // Add a sample with the same C5_Speed as sample 25 from 2ND_PM.S3M
+    mod->samples.emplace_back(Sample{{0.5f, 1.0f, 0.5f, 1.0f}, inst25_c5speed});
+    mod->initial_speed = 3;
+    Player player(mod);
+
+    const PatternEntry::Note asharp_4{PatternEntry::Note::Name::a_sharp, 4};
+    const PatternEntry::Note fnatural_5{PatternEntry::Note::Name::f_natural, 5};
+    const PatternEntry::Note asharp_5{PatternEntry::Note::Name::a_sharp, 5};
+
+    // Skip first couple of rows
+    advance_player(player, 6);
+    EXPECT_NE(player.process_tick(), no_events);
+
+    // Verify row 3
+    EXPECT_EQ(player.channels[0].period, Player::calculate_period(asharp_4, inst25_c5speed));
+    EXPECT_EQ(player.channels[0].volume, 20);
+
+    // Player 2 more rows. We should have easily reached F#5
+    advance_player(player, 6);
+    EXPECT_EQ(player.channels[0].period, Player::calculate_period(fnatural_5, inst25_c5speed));
+}
+
 TEST_F(PlayerNoteInterpretation, CanEmitVolumeChangeEvents)
 {
     ASSERT_TRUE(parse_pattern(R"(... .. 00 .00

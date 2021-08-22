@@ -60,13 +60,11 @@ void Player::process_global_command(const PatternEntry::Effect& effect)
     }
 }
 
-int Player::calculate_period(const PatternEntry::Note& note, const int sample_number)
+int Player::calculate_period(const PatternEntry::Note& note, const int c5_speed)
 {
     static const int note_periods[] = {1712, 1616, 1524, 1440, 1356, 1280,
                                        1208, 1140, 1076, 1016, 960,  907};
-    return ((8363 * 32 * note_periods[note.index()]) >> note.octave()) /
-           static_cast<int>(
-               module->samples[static_cast<size_t>(sample_number - 1)].sample.playbackRate());
+    return ((8363 * 32 * note_periods[note.index()]) >> note.octave()) / c5_speed;
 }
 
 void Player::process_initial_tick(Player::Channel& channel, const PatternEntry& entry)
@@ -84,7 +82,10 @@ void Player::process_initial_tick(Player::Channel& channel, const PatternEntry& 
     if (candidate_note && channel.last_note.is_playable() && channel.last_inst) {
         if (entry._effect.comm != PatternEntry::Command::portamento_to_note) {
             channel.note_on = true;
-            channel.period = calculate_period(channel.last_note, channel.last_inst);
+            channel.period = calculate_period(
+                channel.last_note,
+                static_cast<int>(module->samples[static_cast<size_t>(channel.last_inst - 1)]
+                                     .sample.playbackRate()));
         }
         channel.volume = module->samples[channel.last_inst - 1].default_volume;
     }
@@ -137,15 +138,18 @@ void Player::process_initial_tick(Player::Channel& channel, const PatternEntry& 
         } else if ((data & 0xF0) == 0xF0) {
             channel.period -= (data & 0x0F) * 4;
         } else {
-            channel.effects.pitch_slide_speed = -static_cast<int8_t>(data * 4);
+            channel.effects.pitch_slide_speed = -data * 4;
             channel.effects.pitch_slide_target = 56 - 1;
         }
     } else if (entry._effect.comm == PatternEntry::Command::portamento_to_note) {
         auto data = entry._effect.data ? entry._effect.data : channel.effects_memory.pitch_slide;
         channel.effects_memory.pitch_slide = data;
 
-        channel.effects.pitch_slide_target = calculate_period(channel.last_note, channel.last_inst);
-        channel.effects.pitch_slide_speed = static_cast<int8_t>(data * 4);
+        channel.effects.pitch_slide_target = calculate_period(
+            channel.last_note,
+            static_cast<int>(
+                module->samples[static_cast<size_t>(channel.last_inst - 1)].sample.playbackRate()));
+        channel.effects.pitch_slide_speed = data * 4;
 
         if (channel.period > channel.effects.pitch_slide_target) {
             channel.effects.pitch_slide_speed = -channel.effects.pitch_slide_speed;

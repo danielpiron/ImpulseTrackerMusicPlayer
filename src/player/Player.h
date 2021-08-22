@@ -19,7 +19,7 @@ struct Player : public Mixer::TickHandler {
 
         struct Effects {
             int8_t volume_slide_speed;
-            int8_t pitch_slide_speed;
+            int pitch_slide_speed;
             int pitch_slide_target;
         };
 
@@ -45,7 +45,7 @@ struct Player : public Mixer::TickHandler {
 
     void render_audio(float*, int);
 
-    int calculate_period(const PatternEntry::Note& note, const int sample_number);
+    static int calculate_period(const PatternEntry::Note& note, const int c5_speed);
     void process_global_command(const PatternEntry::Effect& effect);
     void process_initial_tick(Player::Channel& channel, const PatternEntry& entry);
 
