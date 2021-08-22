@@ -7,12 +7,14 @@
 [X] Implement pitch slide (slide up, slide down, portamento)
 [X] BUG: When none looping sample ends, channel needs to be deactivated
 [X] LERP to 0 at end of non-looping sample
+[X] Implement portamento + volume slide
+[ ] Portamento can handle higher speeds
 [ ] Create loader "txt"
 [ ] Integrate S3M loader from branch
     [ ] Verify validity of S3M and throw error otherwise (crashes now)
 [ ] Integrate Impulse Tracker loader from branch
 [ ] Implement vibrato effect
-[ ] Portamento can handle values greater than 7Fh
+[ ] Implement vibrato effect + volume slide
 [ ] Mixer post-processing (divide by channel count?)
 [ ] Detect file loader based on extension
 [ ] Fix iterator related bugs in parsing patterns (Manifested on Windows)

@@ -98,8 +98,11 @@ void Player::process_initial_tick(Player::Channel& channel, const PatternEntry& 
     }
 
     channel.effects.volume_slide_speed = 0;
-    channel.effects.pitch_slide_speed = 0;
-    if (entry._effect.comm == PatternEntry::Command::volume_slide) {
+
+    if (entry._effect.comm != PatternEntry::Command::portamento_to_and_volume_slide)
+        channel.effects.pitch_slide_speed = 0;
+    if (entry._effect.comm == PatternEntry::Command::volume_slide ||
+        entry._effect.comm == PatternEntry::Command::portamento_to_and_volume_slide) {
         auto data = entry._effect.data ? entry._effect.data : channel.effects_memory.volume_slide;
         channel.effects_memory.volume_slide = data;
         if ((data & 0xF0) == 0xF0) {

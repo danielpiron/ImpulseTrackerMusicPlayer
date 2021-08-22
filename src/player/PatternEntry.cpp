@@ -171,6 +171,9 @@ static PatternEntry::Effect parse_pattern_entry_effect(std::string::const_iterat
     case 'G':
         comm = PatternEntry::Command::portamento_to_note;
         break;
+    case 'L':
+        comm = PatternEntry::Command::portamento_to_and_volume_slide;
+        break;
     case 'T':
         comm = PatternEntry::Command::set_tempo;
         break;

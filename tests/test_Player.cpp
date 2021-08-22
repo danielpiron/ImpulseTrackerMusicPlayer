@@ -240,6 +240,36 @@ TEST_F(PlayerChannelEffects, VolumeRangeIsClamped)
     EXPECT_EQ(player.channels[0].volume, 0);
 }
 
+TEST_F(PlayerChannelEffects, CanHandlePortamentoPlusVolumeSlide)
+{
+    ASSERT_TRUE(parse_pattern(R"(A#5 01 .. .00
+                                 B-5 01 .. G01
+                                 ... .. .. L04
+                                 ... .. .. L00)",
+                              mod->patterns[0]));
+    mod->initial_speed = 2;
+    Player player(mod);
+
+    // Skip to the 3rd row (We already know portamento works)
+    advance_player(player, 4);
+
+    // ROW 3
+    EXPECT_EQ(player.process_tick(), no_events);
+    EXPECT_EQ(player.channels[0].period, 960 - 4);
+
+    EXPECT_NE(player.process_tick(), no_events);
+    EXPECT_EQ(player.channels[0].period, 960 - 8);
+    EXPECT_EQ(player.channels[0].volume, 60);
+
+    // ROW 4
+    EXPECT_EQ(player.process_tick(), no_events);
+    EXPECT_EQ(player.channels[0].period, 960 - 8);
+
+    EXPECT_NE(player.process_tick(), no_events);
+    EXPECT_EQ(player.channels[0].period, 960 - 12);
+    EXPECT_EQ(player.channels[0].volume, 56);
+}
+
 TEST_F(PlayerChannelEffects, CanPitchSlideDownExtraFine)
 {
     ASSERT_TRUE(parse_pattern(R"(C-5 01 .. EE3
