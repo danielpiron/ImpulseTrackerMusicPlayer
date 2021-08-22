@@ -84,6 +84,9 @@ std::ostream& operator<<(std::ostream& os, const PatternEntry& pe)
     case PatternEntry::Command::vibrato:
         os << 'H';
         break;
+    case PatternEntry::Command::vibrato_and_volume_slide:
+        os << 'K';
+        break;
     case PatternEntry::Command::portamento_to_and_volume_slide:
         os << 'L';
         break;
@@ -205,6 +208,9 @@ static PatternEntry::Effect parse_pattern_entry_effect(std::string::const_iterat
         break;
     case 'H':
         comm = PatternEntry::Command::vibrato;
+        break;
+    case 'K':
+        comm = PatternEntry::Command::vibrato_and_volume_slide;
         break;
     case 'L':
         comm = PatternEntry::Command::portamento_to_and_volume_slide;

@@ -543,6 +543,42 @@ TEST_F(PlayerChannelEffects, CanHandleVibrato)
     ASSERT_EQ(player.channels[0].period_offset, 0);
 }
 
+TEST_F(PlayerChannelEffects, CanHandleVibratoAndVolumeChange)
+{
+    ASSERT_TRUE(parse_pattern(R"(C-5 01 .. H72
+                                 ... .. .. K04
+                                 ... .. .. .00)",
+                              mod->patterns[0]));
+
+    const auto depth = 2 * 4;
+    mod->initial_speed = 3;
+    Player player(mod);
+
+    // ROW 1 - SKIP
+    advance_player(player, 3);
+
+    // ROW 2
+    EXPECT_EQ(player.process_tick(), no_events);
+    EXPECT_EQ(player.channels[0].period, 1712);
+    EXPECT_EQ(player.channels[0].period_offset, (63 * depth) >> 5);
+    EXPECT_EQ(player.channels[0].volume, 64);
+
+    EXPECT_NE(player.process_tick(), no_events);
+    EXPECT_EQ(player.channels[0].period, 1712);
+    EXPECT_EQ(player.channels[0].period_offset, (56 * depth) >> 5);
+    EXPECT_EQ(player.channels[0].volume, 60);
+
+    EXPECT_NE(player.process_tick(), no_events);
+    EXPECT_EQ(player.channels[0].period, 1712);
+    EXPECT_EQ(player.channels[0].period_offset, (24 * depth) >> 5);
+    EXPECT_EQ(player.channels[0].volume, 56);
+
+    // ROW 4 - Snap back to original period
+    EXPECT_NE(player.process_tick(), no_events);
+    EXPECT_EQ(player.channels[0].period, 1712);
+    EXPECT_EQ(player.channels[0].period_offset, 0);
+}
+
 TEST_F(PlayerNoteInterpretation, CanEmitVolumeChangeEvents)
 {
     ASSERT_TRUE(parse_pattern(R"(... .. 00 .00

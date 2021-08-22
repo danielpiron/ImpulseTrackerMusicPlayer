@@ -11,7 +11,7 @@
 [X] Portamento can handle higher speeds
 [X] BUG: Dont't set speed if data is 0 (it pauses playback indefinitely)
 [X] Implement vibrato effect
-[ ] Implement vibrato effect + volume slide
+[X] Implement vibrato effect + volume slide
 [ ] Create loader "txt"
 [ ] Integrate S3M loader from branch
     [ ] Verify validity of S3M and throw error otherwise (crashes now)

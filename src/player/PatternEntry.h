@@ -64,6 +64,7 @@ struct PatternEntry {
         pitch_slide_up,
         portamento_to_note,
         vibrato,
+        vibrato_and_volume_slide,
         portamento_to_and_volume_slide,
         set_tempo,
         set_volume
