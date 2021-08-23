@@ -12,10 +12,12 @@
 [X] BUG: Dont't set speed if data is 0 (it pauses playback indefinitely)
 [X] Implement vibrato effect
 [X] Implement vibrato effect + volume slide
-[ ] Create loader "txt"
-[ ] Integrate S3M loader from branch
-    [ ] Verify validity of S3M and throw error otherwise (crashes now)
+[X] Integrate S3M loader from branch 
+[ ] Implement sample offset effect (O)
+[ ] Portamento/Instrument change (sample sets back to 0)
+[ ] Verify validity of S3M and throw error otherwise (crashes now)
 [ ] Integrate Impulse Tracker loader from branch
+[ ] Create loader "txt"
 [ ] Mixer post-processing (divide by channel count?)
 [ ] Detect file loader based on extension
 [ ] Fix iterator related bugs in parsing patterns (Manifested on Windows)
