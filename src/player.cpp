@@ -3,6 +3,7 @@
 #include <player/Module.h>
 #include <player/Player.h>
 
+#include <loader/it.h>
 #include <loader/s3m.h>
 
 #include <cmath>
@@ -23,6 +24,28 @@ static void StreamFinished(void* userData)
 {
     (void)userData;
     std::cout << "Stream complete" << std::endl;
+}
+
+static std::shared_ptr<Module> load_module(const char* filename)
+{
+    std::ifstream fs{filename, std::ios::binary};
+    char ext[5];
+
+    const char* ptr = filename;
+    while (*ptr != '.' && *ptr != '\0')
+        ptr++;
+    std::strncpy(ext, ptr, 4);
+    for (size_t i = 0; i < strnlen(ext, 4); ++i) {
+        ext[i] = static_cast<char>(std::tolower(ext[i]));
+    }
+
+    if (strncmp(ext, ".s3m", 4) == 0) {
+        return load_s3m(fs);
+    } else if (strncmp(ext, ".it", 4) == 0) {
+        return load_it(fs);
+    } else {
+        return std::make_shared<Module>();
+    }
 }
 
 int main(int argc, char* argv[])
@@ -51,10 +74,7 @@ int main(int argc, char* argv[])
         Pa_GetDeviceInfo(outputParameters.device)->defaultHighOutputLatency;
     outputParameters.hostApiSpecificStreamInfo = NULL;
 
-    std::ifstream s3m(argv[1], s3m.binary);
-
-    auto mod = load_s3m(s3m);
-    Player player(mod);
+    Player player(load_module(argv[1]));
 
     PaStream* stream = nullptr;
     err = Pa_OpenStream(&stream, NULL, &outputParameters, 44100, paFramesPerBufferUnspecified, 0,

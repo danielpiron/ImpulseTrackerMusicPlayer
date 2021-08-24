@@ -14,12 +14,12 @@
 [X] Implement vibrato effect + volume slide
 [X] Integrate S3M loader from branch 
 [X] Implement sample offset effect (O)
+[X] Detect file loader based on extension
+[X] Integrate Impulse Tracker loader from branch
 [ ] Portamento/Instrument change (sample sets back to 0)
 [ ] Verify validity of S3M and throw error otherwise (crashes now)
-[ ] Integrate Impulse Tracker loader from branch
 [ ] Create loader "txt"
 [ ] Mixer post-processing (divide by channel count?)
-[ ] Detect file loader based on extension
 [ ] Fix iterator related bugs in parsing patterns (Manifested on Windows)
 [ ] Fix empty sample loading bug (Manifested on Windows)
 [ ] Update LERP function

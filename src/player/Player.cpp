@@ -32,7 +32,7 @@ Player::Player(const std::shared_ptr<Module>& mod)
       current_order(0),
       process_row(0),
       channels(32),
-      _mixer(44100, 16)
+      _mixer(44100, 32)
 {
     _mixer.attach_handler(this);
 }
