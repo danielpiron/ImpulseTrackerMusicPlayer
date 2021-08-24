@@ -28,6 +28,7 @@ struct Player : public Mixer::TickHandler {
             int pitch_slide_speed = 0;
             int pitch_slide_target = 0;
             Vibrato vibrato;
+            int sample_offset = 0;
         };
 
         struct EffectsMemory {

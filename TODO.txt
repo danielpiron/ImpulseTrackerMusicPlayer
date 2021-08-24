@@ -13,7 +13,7 @@
 [X] Implement vibrato effect
 [X] Implement vibrato effect + volume slide
 [X] Integrate S3M loader from branch 
-[ ] Implement sample offset effect (O)
+[X] Implement sample offset effect (O)
 [ ] Portamento/Instrument change (sample sets back to 0)
 [ ] Verify validity of S3M and throw error otherwise (crashes now)
 [ ] Integrate Impulse Tracker loader from branch

@@ -24,6 +24,10 @@ std::ostream& operator<<(std::ostream& os, const Channel::Event::Action& action)
         {
             os << "set note on (frequency: " << no.frequency << ", sample: " << no.sample;
         }
+        void operator()(const Channel::Event::SetSampleIndex& si)
+        {
+            os << "set sample index: " << si.index;
+        }
         void operator()(const Channel::Event::SetVolume& v) { os << "set volume to " << v.volume; }
         std::ostream& os;
     };
@@ -577,6 +581,53 @@ TEST_F(PlayerChannelEffects, CanHandleVibratoAndVolumeChange)
     EXPECT_NE(player.process_tick(), no_events);
     EXPECT_EQ(player.channels[0].period, 1712);
     EXPECT_EQ(player.channels[0].period_offset, 0);
+}
+
+TEST_F(PlayerChannelEffects, CanHandleSampleOffset)
+{
+    ASSERT_TRUE(parse_pattern(R"(C-5 03 .. O01
+                                 C-5 03 .. O02
+                                 C-5 03 .. O05
+                                 ... .. .. .00)",
+                              mod->patterns[0]));
+
+    std::vector<float> dummy_sample(1024);
+    mod->samples.emplace_back(Sample{dummy_sample.begin(), dummy_sample.end(), 8363});
+
+    Player player(mod);
+    // The sample offset command takes the value * 256, so we need at least
+    // that many samples. Going beyond the sample size ignores the command.
+
+    auto& mixer = const_cast<Mixer&>(player.mixer());
+    {
+        const auto& events = player.process_tick();
+        EXPECT_NE(events, no_events);
+
+        for (const auto& event : events) {
+            mixer.process_event(event);
+        }
+        ASSERT_NE(player.mixer().channel(0).sample(), nullptr);
+        EXPECT_EQ(player.mixer().channel(0).sample()->length(), 1024);
+        EXPECT_EQ(player.mixer().channel(0).sample_index(), 256.0f);
+    }
+
+    {
+        const auto& events = player.process_tick();
+        EXPECT_NE(events, no_events);
+        for (const auto& event : events) {
+            mixer.process_event(event);
+        }
+        EXPECT_EQ(player.mixer().channel(0).sample_index(), 512.0f);
+    }
+
+    {
+        const auto& events = player.process_tick();
+        EXPECT_NE(events, no_events);
+        for (const auto& event : events) {
+            mixer.process_event(event);
+        }
+        EXPECT_EQ(player.mixer().channel(0).sample_index(), 0);
+    }
 }
 
 TEST_F(PlayerNoteInterpretation, CanEmitVolumeChangeEvents)

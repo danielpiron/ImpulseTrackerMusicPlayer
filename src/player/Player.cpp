@@ -192,6 +192,8 @@ void Player::process_initial_tick(Player::Channel& channel, const PatternEntry& 
 
         channel.effects.vibrato.speed = (data >> 4) * 4;
         channel.effects.vibrato.depth = (data & 0x0F) * 4;
+    } else if (entry._effect.comm == PatternEntry::Command::set_sample_offset) {
+        channel.effects.sample_offset = entry._effect.data * 256;
     }
 }
 
@@ -233,6 +235,8 @@ const std::vector<Mixer::Event>& Player::process_tick()
         auto last_period = channel.period;
         auto last_period_offset = channel.period_offset;
 
+        channel.effects.sample_offset = 0;
+
         if (initial_tick) {
             const auto& entry = current_pattern.channel(channel_index).row(current_row);
             process_global_command(entry._effect);
@@ -263,6 +267,12 @@ const std::vector<Mixer::Event>& Player::process_tick()
             mixer_events.push_back(
                 {static_cast<size_t>(channel_index),
                  ::Channel::Event::SetVolume{static_cast<float>(channel.volume) / 64.0f}});
+        }
+
+        if (channel.effects.sample_offset > 0) {
+            mixer_events.push_back(
+                {static_cast<size_t>(channel_index),
+                 ::Channel::Event::SetSampleIndex{channel.effects.sample_offset}});
         }
     }
 

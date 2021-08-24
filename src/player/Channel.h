@@ -21,11 +21,15 @@ class Channel {
                 return sample == rhs.sample && frequency == rhs.frequency;
             }
         };
+        struct SetSampleIndex {
+            int index;
+            bool operator==(const SetSampleIndex& rhs) const { return index == rhs.index; }
+        };
         struct SetVolume {
             float volume;
             bool operator==(const SetVolume& rhs) const { return volume == rhs.volume; }
         };
-        using Action = std::variant<SetFrequency, SetNoteOn, SetVolume>;
+        using Action = std::variant<SetFrequency, SetNoteOn, SetSampleIndex, SetVolume>;
     };
 
   public:
@@ -40,6 +44,10 @@ class Channel {
             {
                 c.set_frequency(note_on.frequency);
                 c.play(note_on.sample);
+            }
+            void operator()(const Event::SetSampleIndex& set_index)
+            {
+                c.set_sample_index(set_index.index);
             }
             void operator()(const Event::SetVolume& set_vol) { c.set_volume(set_vol.volume); }
             Channel& c;
@@ -59,6 +67,15 @@ class Channel {
     void stop() { _is_active = false; }
 
     void set_sample(const Sample* sample_) { _sample = sample_; }
+
+    void set_sample_index(const int index)
+    {
+        if (_sample == nullptr)
+            return;
+        if (static_cast<size_t>(index) >= _sample->length())
+            return;
+        _sampleIndex = static_cast<float>(index);
+    }
 
     void set_frequency(const float freq) { _frequency = freq; }
 

@@ -92,6 +92,8 @@ PatternEntry::Command s3m_comm_to_effect(const uint8_t comm)
         return PatternEntry::Command::vibrato_and_volume_slide;
     case 'L':
         return PatternEntry::Command::portamento_to_and_volume_slide;
+    case 'O':
+        return PatternEntry::Command::set_sample_offset;
     case 'T':
         return PatternEntry::Command::set_tempo;
     default:

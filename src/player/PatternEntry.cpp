@@ -90,6 +90,9 @@ std::ostream& operator<<(std::ostream& os, const PatternEntry& pe)
     case PatternEntry::Command::portamento_to_and_volume_slide:
         os << 'L';
         break;
+    case PatternEntry::Command::set_sample_offset:
+        os << 'O';
+        break;
     case PatternEntry::Command::set_tempo:
         os << 'T';
         break;
@@ -214,6 +217,9 @@ static PatternEntry::Effect parse_pattern_entry_effect(std::string::const_iterat
         break;
     case 'L':
         comm = PatternEntry::Command::portamento_to_and_volume_slide;
+        break;
+    case 'O':
+        comm = PatternEntry::Command::set_sample_offset;
         break;
     case 'T':
         comm = PatternEntry::Command::set_tempo;
