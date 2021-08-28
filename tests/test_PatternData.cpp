@@ -171,3 +171,40 @@ TEST(ParsePatternsFromText, CanParseMultipleChannels)
     ASSERT_TRUE(parse_pattern(text, result));
     EXPECT_EQ(result, expected);
 }
+
+TEST(PatternEntryNotes, CanInitializeWithRawValue)
+{
+    using NoteName = Pattern::Entry::Note::Name;
+    const PatternEntry::Note c5{NoteName::c_natural, 5};
+    const PatternEntry::Note raw_c5{60};
+
+    EXPECT_EQ(raw_c5, c5);
+}
+
+TEST(PatternEntryNotes, RawInitializationStaysWithinPlayableRange)
+{
+    using NoteName = Pattern::Entry::Note::Name;
+    const PatternEntry::Note highest_note{NoteName::b_natural, 9};
+    const PatternEntry::Note lowest_note{NoteName::c_natural, 0};
+
+    EXPECT_EQ(PatternEntry::Note{-10}, lowest_note);
+    EXPECT_EQ(PatternEntry::Note{254}, highest_note);
+    // NOTE: 254 is a 'valid' note value, but we are restricting the 'int' constructor to playable
+    // notes.
+}
+
+TEST(PatternEntryNotes, CanHaveOffsetsAdded)
+{
+    using NoteName = Pattern::Entry::Note::Name;
+    const PatternEntry::Note c4{NoteName::c_natural, 4};
+    const PatternEntry::Note e4{NoteName::e_natural, 4};
+    const PatternEntry::Note g4{NoteName::g_natural, 4};
+    const PatternEntry::Note c5{NoteName::c_natural, 5};
+    const PatternEntry::Note b9{NoteName::b_natural, 9};
+
+    EXPECT_EQ(c4 + 0, c4);
+    EXPECT_EQ(c4 + 4, e4);
+    EXPECT_EQ(c4 + 7, g4);
+    EXPECT_EQ(c5 + -12, c4);
+    EXPECT_EQ(b9 + 1, b9);
+}

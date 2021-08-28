@@ -1,6 +1,7 @@
 #ifndef _PATTERN_ENTRY_H_
 #define _PATTERN_ENTRY_H_
 
+#include <algorithm>
 #include <cstdint>
 #include <iostream>
 
@@ -29,9 +30,16 @@ struct PatternEntry {
       public:
         Note() : _type(Type::empty) {}
 
+        Note(int raw_value) : _value(static_cast<uint8_t>(clamp_to_playable(raw_value))) {}
         explicit Note(int index, int octave) : _value(static_cast<uint8_t>(octave * 12 + index)) {}
         explicit Note(Name name, int octave) : Note(static_cast<int>(name), octave) {}
         explicit Note(Type type) : _type(type) {}
+
+        static int clamp_to_playable(int v)
+        {
+            return std::clamp(v, static_cast<int>(Note{Name::c_natural, 0}._value),
+                              static_cast<int>(Note{Name::b_natural, 9}._value));
+        }
 
         Name name() const { return static_cast<Name>(index()); }
         int index() const { return _value % 12; }
@@ -45,7 +53,8 @@ struct PatternEntry {
                    _value <= Note{Name::b_natural, 9}._value;
         }
 
-        operator int() const { return _value; }
+        bool operator==(const Note& other) const { return _value == other._value; }
+        Note operator+(const int offset) const { return Note{_value + offset}; }
 
       private:
         union {
