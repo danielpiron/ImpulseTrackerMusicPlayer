@@ -117,6 +117,7 @@ void Player::process_initial_tick(Player::Channel& channel, const PatternEntry& 
         break;
     }
 
+    channel.effects.arrpegio_offsets.fill(0);
     channel.effects.volume_slide_speed = 0;
     if (entry._effect.comm != PatternEntry::Command::vibrato &&
         entry._effect.comm != PatternEntry::Command::vibrato_and_volume_slide) {
@@ -192,12 +193,23 @@ void Player::process_initial_tick(Player::Channel& channel, const PatternEntry& 
 
         channel.effects.vibrato.speed = (data >> 4) * 4;
         channel.effects.vibrato.depth = (data & 0x0F) * 4;
+    } else if (entry._effect.comm == PatternEntry::Command::arpeggio) {
+        int playback_rate = static_cast<int>(
+            module->samples[static_cast<size_t>(channel.last_inst - 1)].sample.playbackRate());
+        auto first_period =
+            calculate_period(channel.last_note + (entry._effect.data >> 4), playback_rate);
+        auto second_period =
+            calculate_period(channel.last_note + (entry._effect.data & 0x0f), playback_rate);
+
+        channel.effects.arrpegio_offsets[0] = 0;
+        channel.effects.arrpegio_offsets[1] = first_period - channel.period;
+        channel.effects.arrpegio_offsets[2] = second_period - channel.period;
     } else if (entry._effect.comm == PatternEntry::Command::set_sample_offset) {
         channel.effects.sample_offset = entry._effect.data * 256;
     }
 }
 
-static void update_effects(Player::Channel& channel)
+static void update_effects(Player::Channel& channel, int tick)
 {
     channel.volume += channel.effects.volume_slide_speed;
     if (channel.effects.pitch_slide_speed) {
@@ -217,6 +229,10 @@ static void update_effects(Player::Channel& channel)
         channel.period_offset =
             (sine_table[channel.effects.vibrato.index] * channel.effects.vibrato.depth) >> 5;
     }
+    if (channel.effects.arrpegio_offsets[0] == 0 &&
+        (channel.effects.arrpegio_offsets[1] != 0 || channel.effects.arrpegio_offsets[2] != 0)) {
+        channel.period_offset = channel.effects.arrpegio_offsets[tick % 3];
+    }
 }
 
 const std::vector<Mixer::Event>& Player::process_tick()
@@ -224,6 +240,9 @@ const std::vector<Mixer::Event>& Player::process_tick()
     mixer_events.clear();
 
     bool initial_tick = --tick_counter == 0;
+    if (initial_tick) {
+        tick_counter = speed;
+    }
 
     const auto& current_pattern = module->patterns[module->patternOrder[current_order]];
     for (size_t channel_index = 0; channel_index < current_pattern.channel_count();
@@ -242,7 +261,7 @@ const std::vector<Mixer::Event>& Player::process_tick()
             process_global_command(entry._effect);
             process_initial_tick(channel, entry);
         } else {
-            update_effects(channel);
+            update_effects(channel, speed - tick_counter);
         }
 
         if (channel.note_on || channel.period != last_period ||
@@ -277,7 +296,6 @@ const std::vector<Mixer::Event>& Player::process_tick()
     }
 
     if (initial_tick) {
-        tick_counter = speed;
         if (process_row == 0xFFFE ||
             ++process_row >= module->patterns[module->patternOrder[current_order]].row_count()) {
             while (module->patternOrder[++current_order] == 254)

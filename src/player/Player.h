@@ -4,6 +4,7 @@
 #include <player/Mixer.h>
 #include <player/PatternEntry.h>
 
+#include <array>
 #include <memory>
 #include <variant>
 #include <vector>
@@ -29,6 +30,7 @@ struct Player : public Mixer::TickHandler {
             int pitch_slide_target = 0;
             Vibrato vibrato;
             int sample_offset = 0;
+            std::array<int, 3> arrpegio_offsets = {0, 0, 0};
         };
 
         struct EffectsMemory {

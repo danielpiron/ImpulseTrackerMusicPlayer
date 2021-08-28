@@ -75,6 +75,7 @@ struct PatternEntry {
         vibrato,
         vibrato_and_volume_slide,
         portamento_to_and_volume_slide,
+        arpeggio,
         set_sample_offset,
         set_tempo,
         set_volume

@@ -583,6 +583,51 @@ TEST_F(PlayerChannelEffects, CanHandleVibratoAndVolumeChange)
     EXPECT_EQ(player.channels[0].period_offset, 0);
 }
 
+TEST_F(PlayerChannelEffects, CanArpeggio)
+{
+    ASSERT_TRUE(parse_pattern(R"(C-5 01 .. J47
+                                 ... .. .. .00)",
+                              mod->patterns[0]));
+
+    mod->initial_speed = 5;
+    Player player(mod);
+    // ROW1 - TICK 0
+    EXPECT_NE(player.process_tick(), no_events);
+    EXPECT_EQ(player.channels[0].period, 1712);
+    EXPECT_EQ(player.channels[0].period_offset, 0);
+
+    // ROW1 - TICK 1
+    EXPECT_NE(player.process_tick(), no_events);
+    EXPECT_EQ(player.channels[0].period, 1712);
+    EXPECT_EQ(player.channels[0].period_offset, -356);
+
+    // ROW1 - TICK 2
+    EXPECT_NE(player.process_tick(), no_events);
+    EXPECT_EQ(player.channels[0].period, 1712);
+    EXPECT_EQ(player.channels[0].period_offset, -572);
+
+    // ROW1 - TICK 3
+    EXPECT_NE(player.process_tick(), no_events);
+    EXPECT_EQ(player.channels[0].period, 1712);
+    EXPECT_EQ(player.channels[0].period_offset, 0);
+
+    // ROW1 - TICK 4
+    EXPECT_NE(player.process_tick(), no_events);
+    EXPECT_EQ(player.channels[0].period, 1712);
+    EXPECT_EQ(player.channels[0].period_offset, -356);
+
+    // Arpeggio should have stopped
+    // ROW2 - TICK 0
+    EXPECT_NE(player.process_tick(), no_events);
+    EXPECT_EQ(player.channels[0].period, 1712);
+    EXPECT_EQ(player.channels[0].period_offset, 0);
+
+    // ROW2 - TICK 1 - No events from frequency changes
+    EXPECT_EQ(player.process_tick(), no_events);
+    EXPECT_EQ(player.channels[0].period, 1712);
+    EXPECT_EQ(player.channels[0].period_offset, 0);
+}
+
 TEST_F(PlayerChannelEffects, CanHandleSampleOffset)
 {
     ASSERT_TRUE(parse_pattern(R"(C-5 03 .. O01

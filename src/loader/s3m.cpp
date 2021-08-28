@@ -90,6 +90,8 @@ PatternEntry::Command s3m_comm_to_effect(const uint8_t comm)
         return PatternEntry::Command::vibrato;
     case 'K':
         return PatternEntry::Command::vibrato_and_volume_slide;
+    case 'J':
+        return PatternEntry::Command::arpeggio;
     case 'L':
         return PatternEntry::Command::portamento_to_and_volume_slide;
     case 'O':
