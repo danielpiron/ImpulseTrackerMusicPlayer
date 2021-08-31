@@ -251,8 +251,7 @@ const std::vector<Mixer::Event>& Player::process_tick()
         auto& channel = channels[static_cast<size_t>(channel_index)];
 
         auto last_volume = channel.volume;
-        auto last_period = channel.period;
-        auto last_period_offset = channel.period_offset;
+        auto last_frequency = channel.frequency;
 
         channel.effects.sample_offset = 0;
 
@@ -264,19 +263,21 @@ const std::vector<Mixer::Event>& Player::process_tick()
             update_effects(channel, speed - tick_counter);
         }
 
-        if (channel.note_on || channel.period != last_period ||
-            channel.period_offset != last_period_offset) {
-            auto playback_frequency = 14317456 / (channel.period + channel.period_offset);
+        if (channel.period + channel.period_offset > 0) {
+            channel.frequency = 14317456 / (channel.period + channel.period_offset);
+        }
+
+        if (channel.note_on || channel.frequency != last_frequency) {
             if (channel.note_on) {
                 mixer_events.push_back({static_cast<size_t>(channel_index),
                                         ::Channel::Event::SetNoteOn{
-                                            static_cast<float>(playback_frequency),
+                                            static_cast<float>(channel.frequency),
                                             &(module->samples[channel.last_inst - 1].sample)}});
                 channel.note_on = false;
             } else {
                 mixer_events.push_back(
                     {static_cast<size_t>(channel_index),
-                     ::Channel::Event::SetFrequency{static_cast<float>(playback_frequency)}});
+                     ::Channel::Event::SetFrequency{static_cast<float>(channel.frequency)}});
             }
         }
 

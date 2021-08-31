@@ -51,6 +51,7 @@ struct Player : public Mixer::TickHandler {
         int period;
         int period_offset = 0;
         int8_t volume = 64;
+        float frequency = 0;
     };
 
     Player(const std::shared_ptr<Module>& mod);

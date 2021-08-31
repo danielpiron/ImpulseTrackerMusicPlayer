@@ -16,13 +16,13 @@
 [X] Implement sample offset effect (O)
 [X] Detect file loader based on extension
 [X] Integrate Impulse Tracker loader from branch
+[X] Create period -> frequency relationship to set stage for linear slides
 [ ] Update frames per tick when tempo change command is reached (How do we test?)
 [ ] Maybe silo frequency based effects in prep for handling amiga/linear effects modes
     [ ] We output frequency, so working with 'periods' is presumably secondary.
     [ ] Effects that change periods ultimately affect frequency, but not the other
         * It may come down to a boolean on whether frequency derives from period or no
         way around. (i.e. We shouldn't expect a frequency change to update a period)
-[ ] Create period -> frequency relationship for Amiga based pitch effects
 [ ] Portamento/Instrument change (sample sets back to 0)
 [ ] Verify validity of S3M and throw error otherwise (crashes now)
 [ ] Create loader "txt"
