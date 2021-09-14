@@ -34,9 +34,9 @@ struct Player : public Mixer::TickHandler {
         };
 
         struct EffectsMemory {
-            uint8_t volume_slide = 0;
-            uint8_t pitch_slide = 0;
-            uint8_t vibrato = 0;
+            PatternEntry::Effect::Param volume_slide = 0;
+            PatternEntry::Effect::Param pitch_slide = 0;
+            PatternEntry::Effect::Param vibrato = 0;
         };
 
       public:

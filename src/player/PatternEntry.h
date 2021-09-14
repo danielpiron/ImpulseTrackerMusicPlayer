@@ -82,15 +82,29 @@ struct PatternEntry {
     };
 
     struct Effect {
-        Effect(Command comm = Command::none, int data = 0)
-            : comm(comm), data(static_cast<uint8_t>(data))
-        {
-        }
+        class Param {
+          public:
+            Param(int data) : _data(static_cast<uint8_t>(data)) {}
+
+            operator uint8_t() const { return _data; }
+            bool operator==(const Param& rhs) const { return _data == rhs._data; }
+
+            Param& operator|=(const int rhs)
+            {
+                _data |= static_cast<decltype(_data)>(rhs);
+                return *this;
+            }
+
+          private:
+            uint8_t _data;
+        };
+
+        Effect(Command comm = Command::none, int data = 0) : comm(comm), data(data) {}
 
         bool operator==(const Effect& rhs) const { return comm == rhs.comm && data == rhs.data; }
 
         Command comm;
-        uint8_t data;
+        Param data;
     };
 
     PatternEntry(Note note = Note(), int inst = 0, Effect vol = Effect(), Effect effect = Effect())
