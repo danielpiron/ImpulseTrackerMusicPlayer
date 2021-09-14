@@ -95,17 +95,17 @@ int Player::sample_playback_rate(int sample_number) const
 void Player::process_initial_tick(Player::Channel& channel, const PatternEntry& entry)
 {
     bool candidate_note = false;
-    if (!entry._note.is_empty()) {
-        channel.last_note = entry._note;
+    if (!entry.note.is_empty()) {
+        channel.last_note = entry.note;
         candidate_note = true;
     }
-    if (entry._inst) {
-        channel.last_inst = entry._inst;
+    if (entry.inst) {
+        channel.last_inst = entry.inst;
         candidate_note = true;
     }
 
     if (candidate_note && channel.last_note.is_playable() && channel.last_inst) {
-        if (entry._effect.comm != PatternEntry::Command::portamento_to_note) {
+        if (entry.effect.comm != PatternEntry::Command::portamento_to_note) {
             channel.note_on = true;
             channel.period =
                 calculate_period(channel.last_note, sample_playback_rate(channel.last_inst));
@@ -113,9 +113,9 @@ void Player::process_initial_tick(Player::Channel& channel, const PatternEntry& 
         channel.volume = module->samples[channel.last_inst - 1].default_volume;
     }
 
-    switch (entry._volume_effect.comm) {
+    switch (entry.volume_effect.comm) {
     case PatternEntry::Command::set_volume:
-        channel.volume = static_cast<int8_t>(entry._volume_effect.data);
+        channel.volume = static_cast<int8_t>(entry.volume_effect.data);
         break;
     default:
         break;
@@ -123,19 +123,19 @@ void Player::process_initial_tick(Player::Channel& channel, const PatternEntry& 
 
     channel.effects.arrpegio_offsets.fill(0);
     channel.effects.volume_slide_speed = 0;
-    if (entry._effect.comm != PatternEntry::Command::vibrato &&
-        entry._effect.comm != PatternEntry::Command::vibrato_and_volume_slide) {
+    if (entry.effect.comm != PatternEntry::Command::vibrato &&
+        entry.effect.comm != PatternEntry::Command::vibrato_and_volume_slide) {
         channel.effects.vibrato.speed = 0;
         channel.effects.vibrato.depth = 0;
         channel.period_offset = 0;
     }
-    if (entry._effect.comm != PatternEntry::Command::portamento_to_and_volume_slide) {
+    if (entry.effect.comm != PatternEntry::Command::portamento_to_and_volume_slide) {
         channel.effects.pitch_slide_speed = 0;
     }
-    if (entry._effect.comm == PatternEntry::Command::volume_slide ||
-        entry._effect.comm == PatternEntry::Command::portamento_to_and_volume_slide ||
-        entry._effect.comm == PatternEntry::Command::vibrato_and_volume_slide) {
-        auto data = entry._effect.data ? entry._effect.data : channel.effects_memory.volume_slide;
+    if (entry.effect.comm == PatternEntry::Command::volume_slide ||
+        entry.effect.comm == PatternEntry::Command::portamento_to_and_volume_slide ||
+        entry.effect.comm == PatternEntry::Command::vibrato_and_volume_slide) {
+        auto data = entry.effect.data ? entry.effect.data : channel.effects_memory.volume_slide;
         channel.effects_memory.volume_slide = data;
         if ((data & 0xF0) == 0xF0) {
             // Fine slide down
@@ -150,8 +150,8 @@ void Player::process_initial_tick(Player::Channel& channel, const PatternEntry& 
             // Slide up
             channel.effects.volume_slide_speed = static_cast<int8_t>((data >> 4));
         }
-    } else if (entry._effect.comm == PatternEntry::Command::pitch_slide_down) {
-        auto data = entry._effect.data ? entry._effect.data : channel.effects_memory.pitch_slide;
+    } else if (entry.effect.comm == PatternEntry::Command::pitch_slide_down) {
+        auto data = entry.effect.data ? entry.effect.data : channel.effects_memory.pitch_slide;
         channel.effects_memory.pitch_slide = data;
         if ((data & 0xF0) == 0xE0) {
             channel.period += (data & 0x0F);
@@ -161,8 +161,8 @@ void Player::process_initial_tick(Player::Channel& channel, const PatternEntry& 
             channel.effects.pitch_slide_speed = static_cast<int8_t>(data * 4);
             channel.effects.pitch_slide_target = 54784 + 1;
         }
-    } else if (entry._effect.comm == PatternEntry::Command::pitch_slide_up) {
-        auto data = entry._effect.data ? entry._effect.data : channel.effects_memory.pitch_slide;
+    } else if (entry.effect.comm == PatternEntry::Command::pitch_slide_up) {
+        auto data = entry.effect.data ? entry.effect.data : channel.effects_memory.pitch_slide;
         channel.effects_memory.pitch_slide = data;
         if ((data & 0xF0) == 0xE0) {
             channel.period -= (data & 0x0F);
@@ -172,8 +172,8 @@ void Player::process_initial_tick(Player::Channel& channel, const PatternEntry& 
             channel.effects.pitch_slide_speed = -data * 4;
             channel.effects.pitch_slide_target = 56 - 1;
         }
-    } else if (entry._effect.comm == PatternEntry::Command::portamento_to_note) {
-        auto data = entry._effect.data ? entry._effect.data : channel.effects_memory.pitch_slide;
+    } else if (entry.effect.comm == PatternEntry::Command::portamento_to_note) {
+        auto data = entry.effect.data ? entry.effect.data : channel.effects_memory.pitch_slide;
         channel.effects_memory.pitch_slide = data;
 
         channel.effects.pitch_slide_target =
@@ -183,8 +183,8 @@ void Player::process_initial_tick(Player::Channel& channel, const PatternEntry& 
         if (channel.period > channel.effects.pitch_slide_target) {
             channel.effects.pitch_slide_speed = -channel.effects.pitch_slide_speed;
         }
-    } else if (entry._effect.comm == PatternEntry::Command::vibrato) {
-        auto data = entry._effect.data;
+    } else if (entry.effect.comm == PatternEntry::Command::vibrato) {
+        auto data = entry.effect.data;
         if ((data & 0xF0) == 0) {
             data |= channel.effects_memory.vibrato & 0xF0;
         }
@@ -195,18 +195,18 @@ void Player::process_initial_tick(Player::Channel& channel, const PatternEntry& 
 
         channel.effects.vibrato.speed = (data >> 4) * 4;
         channel.effects.vibrato.depth = (data & 0x0F) * 4;
-    } else if (entry._effect.comm == PatternEntry::Command::arpeggio) {
+    } else if (entry.effect.comm == PatternEntry::Command::arpeggio) {
         int playback_rate = sample_playback_rate(channel.last_inst);
         auto first_period =
-            calculate_period(channel.last_note + (entry._effect.data >> 4), playback_rate);
+            calculate_period(channel.last_note + (entry.effect.data >> 4), playback_rate);
         auto second_period =
-            calculate_period(channel.last_note + (entry._effect.data & 0x0f), playback_rate);
+            calculate_period(channel.last_note + (entry.effect.data & 0x0f), playback_rate);
 
         channel.effects.arrpegio_offsets[0] = 0;
         channel.effects.arrpegio_offsets[1] = first_period - channel.period;
         channel.effects.arrpegio_offsets[2] = second_period - channel.period;
-    } else if (entry._effect.comm == PatternEntry::Command::set_sample_offset) {
-        channel.effects.sample_offset = entry._effect.data * 256;
+    } else if (entry.effect.comm == PatternEntry::Command::set_sample_offset) {
+        channel.effects.sample_offset = entry.effect.data * 256;
     }
 }
 
@@ -258,7 +258,7 @@ const std::vector<Mixer::Event>& Player::process_tick()
 
         if (initial_tick) {
             const auto& entry = current_pattern.channel(channel_index).row(current_row);
-            process_global_command(entry._effect);
+            process_global_command(entry.effect);
             process_initial_tick(channel, entry);
         } else {
             update_effects(channel, speed - tick_counter);

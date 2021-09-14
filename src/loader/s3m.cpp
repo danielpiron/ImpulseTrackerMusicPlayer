@@ -130,19 +130,19 @@ Pattern load_pattern(std::ifstream& fs)
             const uint8_t key_off = 254;
             uint8_t note = *data++;
             if (note == key_off) {
-                entry._note = PatternEntry::Note{PatternEntry::Note::Type::note_off};
+                entry.note = PatternEntry::Note{PatternEntry::Note::Type::note_off};
             } else if (note != empty_note) {
                 uint8_t octave = (note >> 4) + 1;
                 note &= 0x0F;
-                entry._note = PatternEntry::Note{note, octave};
+                entry.note = PatternEntry::Note{note, octave};
             }
             uint8_t inst = *data++;
-            entry._inst = inst;
+            entry.inst = inst;
         }
 
         if (control & 64) {
             uint8_t vol = *data++;
-            entry._volume_effect = {PatternEntry::Command::set_volume, vol};
+            entry.volume_effect = {PatternEntry::Command::set_volume, vol};
         }
 
         if (control & 128) {
@@ -153,7 +153,7 @@ Pattern load_pattern(std::ifstream& fs)
             if (command == PatternEntry::Command::break_to_row) {
                 info = (info >> 4) * 10 + (info & 0x0F);
             }
-            entry._effect = PatternEntry::Effect{command, info};
+            entry.effect = PatternEntry::Effect{command, info};
         }
         pattern.channel(static_cast<size_t>(channel)).row(static_cast<size_t>(row)) = entry;
     }

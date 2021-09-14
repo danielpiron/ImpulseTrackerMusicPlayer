@@ -90,25 +90,25 @@ static Pattern load_pattern(std::ifstream& fs)
 
             uint8_t note = *data++;
             if (note == empty) {
-                entry._note = PatternEntry::Note{PatternEntry::Note::Type::empty};
+                entry.note = PatternEntry::Note{PatternEntry::Note::Type::empty};
             } else if (note == note_off) {
-                entry._note = PatternEntry::Note{PatternEntry::Note::Type::note_off};
+                entry.note = PatternEntry::Note{PatternEntry::Note::Type::note_off};
             } else if (note == note_cut) {
-                entry._note = PatternEntry::Note{PatternEntry::Note::Type::note_cut};
+                entry.note = PatternEntry::Note{PatternEntry::Note::Type::note_cut};
             } else {
-                entry._note = PatternEntry::Note{note % 12, note / 12};
+                entry.note = PatternEntry::Note{note % 12, note / 12};
             }
         }
 
         if (mask_variable & 2) {
             uint8_t inst = *data++;
-            entry._inst = inst;
+            entry.inst = inst;
         }
 
         if (mask_variable & 4) {
             uint8_t vol = *data++;
             if (vol >= 0 && vol <= 64) {
-                entry._volume_effect = {PatternEntry::Command::set_volume, vol};
+                entry.volume_effect = {PatternEntry::Command::set_volume, vol};
             }
         }
 
@@ -120,20 +120,20 @@ static Pattern load_pattern(std::ifstream& fs)
             if (command == PatternEntry::Command::break_to_row) {
                 info = (info >> 4) * 10 + (info & 0x0F);
             }
-            entry._effect = PatternEntry::Effect{command, info};
+            entry.effect = PatternEntry::Effect{command, info};
         }
 
         if (mask_variable & 16) {
-            entry._note = last_entry._note;
+            entry.note = last_entry.note;
         }
         if (mask_variable & 32) {
-            entry._inst = last_entry._inst;
+            entry.inst = last_entry.inst;
         }
         if (mask_variable & 64) {
-            entry._volume_effect = last_entry._volume_effect;
+            entry.volume_effect = last_entry.volume_effect;
         }
         if (mask_variable & 128) {
-            entry._effect = last_entry._effect;
+            entry.effect = last_entry.effect;
         }
 
         pattern.channel(static_cast<size_t>(channel)).row(static_cast<size_t>(row)) = entry;

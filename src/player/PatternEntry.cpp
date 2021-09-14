@@ -36,27 +36,27 @@ std::ostream& operator<<(std::ostream& os, const PatternEntry::Note& note)
 
 std::ostream& operator<<(std::ostream& os, const PatternEntry& pe)
 {
-    os << pe._note << " ";
+    os << pe.note << " ";
 
-    if (pe._inst == 0) {
+    if (pe.inst == 0) {
         os << "..";
     } else {
         auto width = os.width();
         auto fill = os.fill();
-        os << std::setfill('0') << std::setw(2) << static_cast<int>(pe._inst);
+        os << std::setfill('0') << std::setw(2) << static_cast<int>(pe.inst);
         os << std::setfill(fill) << std::setw(static_cast<int>(width));
     }
     os << " ";
 
     // Start Handle volume
-    if (pe._volume_effect.comm == PatternEntry::Command::set_volume) {
-        os << static_cast<int>(pe._volume_effect.data);
+    if (pe.volume_effect.comm == PatternEntry::Command::set_volume) {
+        os << static_cast<int>(pe.volume_effect.data);
     } else {
         os << "..";
     }
     os << " ";
     // End Handle
-    switch (pe._effect.comm) {
+    switch (pe.effect.comm) {
     case PatternEntry::Command::none:
         os << '.';
         break;
@@ -105,7 +105,7 @@ std::ostream& operator<<(std::ostream& os, const PatternEntry& pe)
 
     auto width = os.width();
     auto fill = os.fill();
-    os << std::setfill('0') << std::setw(2) << std::hex << static_cast<int>(pe._effect.data);
+    os << std::setfill('0') << std::setw(2) << std::hex << static_cast<int>(pe.effect.data);
     os << std::setfill(fill) << std::setw(static_cast<int>(width)) << std::dec;
 
     return os;

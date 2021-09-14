@@ -94,20 +94,20 @@ struct PatternEntry {
     };
 
     PatternEntry(Note note = Note(), int inst = 0, Effect vol = Effect(), Effect effect = Effect())
-        : _note(note), _inst(static_cast<Inst>(inst)), _volume_effect(vol), _effect(effect)
+        : note(note), inst(static_cast<Inst>(inst)), volume_effect(vol), effect(effect)
     {
     }
 
     bool operator==(const PatternEntry& rhs) const
     {
-        return _note == rhs._note && _inst == rhs._inst && _volume_effect == rhs._volume_effect &&
-               _effect == rhs._effect;
+        return note == rhs.note && inst == rhs.inst && volume_effect == rhs.volume_effect &&
+               effect == rhs.effect;
     }
 
-    Note _note;
-    Inst _inst = 0;
-    Effect _volume_effect;
-    Effect _effect;
+    Note note;
+    Inst inst = 0;
+    Effect volume_effect;
+    Effect effect;
 };
 
 extern std::ostream& operator<<(std::ostream& os, const PatternEntry::Note& note);
