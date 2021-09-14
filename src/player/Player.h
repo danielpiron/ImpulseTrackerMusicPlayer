@@ -78,6 +78,9 @@ struct Player : public Mixer::TickHandler {
     std::vector<Mixer::Event> mixer_events;
 
   private:
+    int sample_playback_rate(int sample_number) const;
+
+  private:
     Mixer _mixer;
 };
 

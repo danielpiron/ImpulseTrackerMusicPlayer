@@ -86,6 +86,12 @@ int Player::calculate_period(const PatternEntry::Note& note, const int c5_speed)
     return ((8363 * 32 * note_periods[note.index()]) >> note.octave()) / c5_speed;
 }
 
+int Player::sample_playback_rate(int sample_number) const
+{
+    return static_cast<int>(
+        module->samples[static_cast<size_t>(sample_number - 1)].sample.playbackRate());
+}
+
 void Player::process_initial_tick(Player::Channel& channel, const PatternEntry& entry)
 {
     bool candidate_note = false;
@@ -101,10 +107,8 @@ void Player::process_initial_tick(Player::Channel& channel, const PatternEntry& 
     if (candidate_note && channel.last_note.is_playable() && channel.last_inst) {
         if (entry._effect.comm != PatternEntry::Command::portamento_to_note) {
             channel.note_on = true;
-            channel.period = calculate_period(
-                channel.last_note,
-                static_cast<int>(module->samples[static_cast<size_t>(channel.last_inst - 1)]
-                                     .sample.playbackRate()));
+            channel.period =
+                calculate_period(channel.last_note, sample_playback_rate(channel.last_inst));
         }
         channel.volume = module->samples[channel.last_inst - 1].default_volume;
     }
@@ -172,10 +176,8 @@ void Player::process_initial_tick(Player::Channel& channel, const PatternEntry& 
         auto data = entry._effect.data ? entry._effect.data : channel.effects_memory.pitch_slide;
         channel.effects_memory.pitch_slide = data;
 
-        channel.effects.pitch_slide_target = calculate_period(
-            channel.last_note,
-            static_cast<int>(
-                module->samples[static_cast<size_t>(channel.last_inst - 1)].sample.playbackRate()));
+        channel.effects.pitch_slide_target =
+            calculate_period(channel.last_note, sample_playback_rate(channel.last_inst));
         channel.effects.pitch_slide_speed = data * 4;
 
         if (channel.period > channel.effects.pitch_slide_target) {
@@ -194,8 +196,7 @@ void Player::process_initial_tick(Player::Channel& channel, const PatternEntry& 
         channel.effects.vibrato.speed = (data >> 4) * 4;
         channel.effects.vibrato.depth = (data & 0x0F) * 4;
     } else if (entry._effect.comm == PatternEntry::Command::arpeggio) {
-        int playback_rate = static_cast<int>(
-            module->samples[static_cast<size_t>(channel.last_inst - 1)].sample.playbackRate());
+        int playback_rate = sample_playback_rate(channel.last_inst);
         auto first_period =
             calculate_period(channel.last_note + (entry._effect.data >> 4), playback_rate);
         auto second_period =
