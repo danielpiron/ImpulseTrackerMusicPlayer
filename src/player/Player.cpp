@@ -137,26 +137,26 @@ void Player::process_initial_tick(Player::Channel& channel, const PatternEntry& 
         entry.effect.comm == PatternEntry::Command::vibrato_and_volume_slide) {
         auto data = entry.effect.data ? entry.effect.data : channel.effects_memory.volume_slide;
         channel.effects_memory.volume_slide = data;
-        if ((data & 0xF0) == 0xF0) {
+        if (data.hi_nibble() == 0xF) {
             // Fine slide down
-            channel.volume -= data & 0x0F;
-        } else if ((data & 0x0F) == 0x0F) {
+            channel.volume -= data.lo_nibble();
+        } else if (data.lo_nibble() == 0xF) {
             // Fine slide up
-            channel.volume += data >> 4;
-        } else if ((data & 0x0F) && (data & 0xF0) == 0) {
+            channel.volume += data.hi_nibble();
+        } else if (data.lo_nibble() && data.hi_nibble() == 0) {
             // Slide down
-            channel.effects.volume_slide_speed = -static_cast<int8_t>(data & 0x0F);
-        } else if ((data & 0xF0) && (data & 0x0F) == 0) {
+            channel.effects.volume_slide_speed = -static_cast<int8_t>(data.lo_nibble());
+        } else if (data.hi_nibble() && data.lo_nibble() == 0) {
             // Slide up
-            channel.effects.volume_slide_speed = static_cast<int8_t>((data >> 4));
+            channel.effects.volume_slide_speed = static_cast<int8_t>(data.hi_nibble());
         }
     } else if (entry.effect.comm == PatternEntry::Command::pitch_slide_down) {
         auto data = entry.effect.data ? entry.effect.data : channel.effects_memory.pitch_slide;
         channel.effects_memory.pitch_slide = data;
-        if ((data & 0xF0) == 0xE0) {
-            channel.period += (data & 0x0F);
-        } else if ((data & 0xF0) == 0xF0) {
-            channel.period += (data & 0x0F) * 4;
+        if (data.hi_nibble() == 0xE) {
+            channel.period += data.lo_nibble();
+        } else if (data.hi_nibble() == 0xF) {
+            channel.period += data.lo_nibble() * 4;
         } else {
             channel.effects.pitch_slide_speed = static_cast<int8_t>(data * 4);
             channel.effects.pitch_slide_target = 54784 + 1;
@@ -164,10 +164,10 @@ void Player::process_initial_tick(Player::Channel& channel, const PatternEntry& 
     } else if (entry.effect.comm == PatternEntry::Command::pitch_slide_up) {
         auto data = entry.effect.data ? entry.effect.data : channel.effects_memory.pitch_slide;
         channel.effects_memory.pitch_slide = data;
-        if ((data & 0xF0) == 0xE0) {
-            channel.period -= (data & 0x0F);
-        } else if ((data & 0xF0) == 0xF0) {
-            channel.period -= (data & 0x0F) * 4;
+        if (data.hi_nibble() == 0xE) {
+            channel.period -= data.lo_nibble();
+        } else if (data.hi_nibble() == 0xF) {
+            channel.period -= data.lo_nibble() * 4;
         } else {
             channel.effects.pitch_slide_speed = -data * 4;
             channel.effects.pitch_slide_target = 56 - 1;

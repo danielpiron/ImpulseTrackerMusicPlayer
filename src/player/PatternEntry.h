@@ -86,14 +86,17 @@ struct PatternEntry {
           public:
             Param(int data) : _data(static_cast<uint8_t>(data)) {}
 
-            operator uint8_t() const { return _data; }
-            bool operator==(const Param& rhs) const { return _data == rhs._data; }
-
             Param& operator|=(const int rhs)
             {
                 _data |= static_cast<decltype(_data)>(rhs);
                 return *this;
             }
+
+          public:
+            operator uint8_t() const { return _data; }
+            bool operator==(const Param& rhs) const { return _data == rhs._data; }
+            int hi_nibble() const { return (_data & 0xF0) >> 4; }
+            int lo_nibble() const { return _data & 0x0F; }
 
           private:
             uint8_t _data;
