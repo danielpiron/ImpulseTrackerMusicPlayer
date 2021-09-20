@@ -66,6 +66,7 @@ class Mixer {
     const Channel& channel(size_t c) const { return _channels[c]; }
 
     void set_samples_per_tick(size_t spt) { _samples_per_tick = spt; }
+    size_t samples_per_tick() const { return _samples_per_tick; }
     unsigned int sampling_rate() const { return _sample_rate; }
 
   private:

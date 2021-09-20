@@ -5,6 +5,7 @@
 #include <player/Player.h>
 #include <player/Sample.h>
 
+#include <cmath>
 #include <memory>
 
 std::ostream& operator<<(std::ostream& os, const Mixer::Event& event)
@@ -141,10 +142,18 @@ TEST_F(PlayerGlobalEffects, CanHandleBreakToRowCommand)
 TEST_F(PlayerGlobalEffects, CanHandleSetTempoCommand)
 {
     ASSERT_TRUE(parse_pattern(R"(... .. .. T80)", mod->patterns[0]));
+
+    mod->initial_tempo = 64;
     Player player(mod);
+
+    EXPECT_EQ(player.mixer().samples_per_tick(),
+              std::floor(2.5 * player.mixer().sampling_rate() / 64));
+
     player.process_tick();
 
     EXPECT_EQ(player.tempo, 128);
+    EXPECT_EQ(player.mixer().samples_per_tick(),
+              std::floor(2.5 * player.mixer().sampling_rate() / 128));
 }
 
 TEST_F(PlayerChannelEffects, CanHandleFineVolumeSlide)

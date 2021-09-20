@@ -17,7 +17,7 @@
 [X] Detect file loader based on extension
 [X] Integrate Impulse Tracker loader from branch
 [X] Create period -> frequency relationship to set stage for linear slides
-[ ] Update frames per tick when tempo change command is reached (How do we test?)
+[X] Update frames per tick when tempo change command is processed.
 [ ] Maybe silo frequency based effects in prep for handling amiga/linear effects modes
     [ ] We output frequency, so working with 'periods' is presumably secondary.
     [ ] Effects that change periods ultimately affect frequency, but not the other

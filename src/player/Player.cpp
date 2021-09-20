@@ -73,6 +73,7 @@ void Player::process_global_command(const PatternEntry::Effect& effect)
         break;
     case PatternEntry::Command::set_tempo:
         tempo = effect.data;
+        _mixer.set_samples_per_tick(static_cast<size_t>(2.5f * _mixer.sampling_rate() / tempo));
         break;
     default:
         break;
